@@ -40,7 +40,7 @@ Chat.prototype._isMessageOutdated = function (message) {
         }
         if (message.nickname === this._messages[iMessage].nickname &&
             message.message === this._messages[iMessage].message &&
-            message.time === this._messages[iMessage].time) {
+            message.time.getTime() === this._messages[iMessage].time.getTime()) {
             return true;
         }
     }
