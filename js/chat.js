@@ -53,5 +53,10 @@ Chat.prototype._onMessage = function (chat, message) {
         return;
     }
     this._messages.push(message);
+
+    var isScrollAtBottom = this._view.scrollTop() + this._view.innerHeight() >= this._view.prop("scrollHeight");
     this._view.append($("<li>" + message.nickname + ": " + message.message + "</li>"));
+    if (isScrollAtBottom) {
+        this._view.scrollTop(this._view.prop("scrollHeight"));
+    }
 };
