@@ -1,5 +1,9 @@
 {
   "name": "master-chat",
   "version": "0.0.1",
-  "main": "index.html"
+  "main": "index.html",
+  "window": {
+    "title": "MasterChat",
+    "toolbar": false
+  }
 }

@@ -10,6 +10,10 @@ Chat.prototype._config = {
         {
             "type": "sc2tv",
             "channelId": "http://sc2tv.ru/channel/cah4ec"
+        },
+        {
+            "type": "gg",
+            "channelId": "Happa_"
         }
     ]
 };

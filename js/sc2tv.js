@@ -24,26 +24,42 @@ sc2tv.prototype.getSmileImage = function (status) {
 
 };
 
+sc2tv.prototype.stopChat = function () {
+    this._stopChat();
+};
+
 sc2tv.prototype._CHAT_URL = 'http://chat.sc2tv.ru/';
+sc2tv.prototype._CHANNEL_RETRY_INTERVAL = 2000;
 sc2tv.prototype._CHAT_RELOAD_INTERVAL = 5000;
 
 sc2tv.prototype._channelId = null;
 sc2tv.prototype._chatTimerId = null;
+sc2tv.prototype._channelTimerId = null;
+sc2tv.prototype._isStopped = false;
 
 sc2tv.prototype._findChannelId = function (url, onFound) {
-    $.get(url, function ( data ) {
+    $.get(url).done( function ( data ) {
+        if (this._isStopped) {
+            return;
+        }
         var chatIframeRegex = /channelId=[0-9]*&/;
         var matches = data.match(chatIframeRegex);
         if (matches.length == 0) {
             return;
         }
         var match = matches[0];
-        match = match.replace("channelId=", "");
-        match = match.replace("&", "");
+        match = match.substring(10, match.length - 1);
         if (typeof(onFound) === "function") {
             onFound(match);
         }
-    });
+    }.bind(this)).fail( function () {
+        if (this._isStopped) {
+            return;
+        }
+        this._channelTimerId = setInterval(function() {
+            this._findChannelId(url, onFound);
+        }.bind(this), this._CHANNEL_RETRY_INTERVAL);
+    }.bind(this));
 };
 
 sc2tv.prototype._startChat = function () {
@@ -52,7 +68,9 @@ sc2tv.prototype._startChat = function () {
 };
 
 sc2tv.prototype._stopChat = function () {
-    clearInterval(self._chatTimerId);
+    this._isStopped = true;
+    clearInterval(this._chatTimerId);
+    clearInterval(this._channelTimerId);
 };
 
 sc2tv.prototype._readChat = function () {
@@ -61,6 +79,9 @@ sc2tv.prototype._readChat = function () {
         cache: true
     });
     $.getJSON(this._CHAT_URL + 'memfs/channel-' + this._channelId + '.json', function(jsonData) {
+        if (this._isStopped) {
+            return;
+        }
         if (jsonData === undefined) {
             return;
         }
