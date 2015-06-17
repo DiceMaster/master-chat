@@ -7,10 +7,10 @@ var Chat = function(view) {
 
 Chat.prototype._config = {
     "channels": [
-        {
+/*        {
             "type": "sc2tv",
             "channelId": "http://sc2tv.ru/channel/cah4ec"
-        },
+        },*/
         {
             "type": "gg",
             "channelId": "Happa_"

@@ -1,6 +1,6 @@
-var sc2tv = function(url) {
-    this.url = url;
-    this._findChannelId(url, function (channelId) {
+var sc2tv = function(channel) {
+    this.channel = channel;
+    this._findChannelId(channel, function (channelId) {
         this._channelId = channelId;
         this._startChat();
     }.bind(this));
@@ -12,7 +12,7 @@ sc2tv.prototype.onUsersCountChange = null;
 
 sc2tv.prototype.name = "sc2tv";
 sc2tv.prototype.displayName = "Sc2tv.ru";
-sc2tv.prototype.url = null;
+sc2tv.prototype.channel = null;
 
 sc2tv.prototype.chatImage = "sc2tv.png";
 
@@ -29,7 +29,7 @@ sc2tv.prototype.stopChat = function () {
 };
 
 sc2tv.prototype._CHAT_URL = 'http://chat.sc2tv.ru/';
-sc2tv.prototype._CHANNEL_RETRY_INTERVAL = 2000;
+sc2tv.prototype._CHANNEL_RETRY_INTERVAL = 10000;
 sc2tv.prototype._CHAT_RELOAD_INTERVAL = 5000;
 
 sc2tv.prototype._channelId = null;
@@ -92,7 +92,7 @@ sc2tv.prototype._readChat = function () {
             chatMessage.nickname = jsonMessages[i].name;
             chatMessage.id = jsonMessages[i].id;
             chatMessage.time = new Date(jsonMessages[i].date);
-            chatMessage.chat = this._url;
+            chatMessage.channel = this.channel;
             if (typeof(this.onMessage) === "function") {
                 this.onMessage(this, chatMessage);
             }
