@@ -7,10 +7,10 @@ var Chat = function(view) {
 
 Chat.prototype._config = {
     "channels": [
-/*        {
+        {
             "type": "sc2tv",
-            "channelId": "http://sc2tv.ru/channel/cah4ec"
-        },*/
+            "channelId": "cah4ec"
+        },
         {
             "type": "gg",
             "channelId": "Happa_"
@@ -59,7 +59,11 @@ Chat.prototype._onMessage = function (chat, message) {
     this._messages.push(message);
 
     var isScrollAtBottom = this._view.scrollTop() + this._view.innerHeight() >= this._view.prop("scrollHeight");
-    this._view.append($("<li>" + message.nickname + ": " + message.message + "</li>"));
+    if (message.isPersonal) {
+        this._view.append($("<li>" + message.chat + "| <strong>" + message.nickname + ": " + message.message + "</strong></li>"));
+    } else {
+        this._view.append($("<li>" + message.chat + "| " + message.nickname + ": " + message.message + "</li>"));
+    }
     if (isScrollAtBottom) {
         this._view.scrollTop(this._view.prop("scrollHeight"));
     }

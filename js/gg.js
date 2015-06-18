@@ -1,8 +1,7 @@
 var gg = function(channel) {
     this.channel = channel;
-    this._findChannelId(this._CHANNEL_URL + channel + "/", function (channelId, token) {
+    this._findChannelId(this._CHANNEL_URL.replace("%channel%", channel), function (channelId) {
         this._channelId = channelId;
-        this._token = token;
         this._connect();
     }.bind(this));
 };
@@ -35,37 +34,29 @@ gg.prototype.stopChat = function () {
 };
 
 gg.prototype._CHAT_URL = "ws://goodgame.ru:8080/";
-gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
+gg.prototype._CHANNEL_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
 sc2tv.prototype._RETRY_INTERVAL = 10000;
 
 gg.prototype._socket = null;
 gg.prototype._channelId = null;
-gg.prototype._token = null;
 gg.prototype._channelTimerId = null;
 gg.prototype._isStopped = false;
 
 gg.prototype._findChannelId = function (url, onFound) {
-    $.get(url).done( function ( data ) {
+    $.getJSON(url).done( function ( data ) {
         if (this._isStopped) {
             return;
         }
-        var channelIdRegex = /channelId:\s*'[0-9]*'/;
-        var channelIdMatches = data.match(channelIdRegex);
-        if (channelIdMatches === null || channelIdMatches.length == 0) {
-            return;
+        var id;
+        for (var prop in data) {
+            if (data.hasOwnProperty(prop)) {
+                id = prop;
+                break;
+            }
         }
-        var channelIdMatch = channelIdMatches[0];
-        channelIdMatch = channelIdMatch.replace(/\D/g,'');
-        var tokenRegex = /userToken:\s*'[a-zA-Z\d]*'/;
-        var tokenMatches = data.match(tokenRegex);
-        if (tokenMatches === null || tokenMatches.length == 0) {
-            return;
-        }
-        var tokenMatch = tokenMatches[0];
-        tokenMatch = tokenMatch.replace(/userToken:\s*/,'');
-        tokenMatch = tokenMatch.replace(/'/g,'');
+        clearInterval(this._channelTimerId);
         if (typeof(onFound) === "function") {
-            onFound(channelIdMatch, tokenMatch);
+            onFound(id);
         }
     }.bind(this)).fail( function () {
         if (this._isStopped) {
@@ -78,7 +69,7 @@ gg.prototype._findChannelId = function (url, onFound) {
 };
 
 gg.prototype._connect = function () {
-    this._socket = new WebSocket(this._CHAT_URL);
+    this._socket = new SockJS("http://goodgame.ru/chat/websocket/");
     this._socket.onclose = function() {
         this._socket = null;
         setInterval(this._connect.bind(this), this._CHANNEL_RETRY_INTERVAL);
@@ -98,7 +89,7 @@ gg.prototype._processGoodGameMessage = function(message) {
                 "type": "auth",
                 "data": {
                     "user_id": 0,
-                    "token": this._token
+                    "token": ""
                 }
             };
             var messageString = JSON.stringify(authMessage);
@@ -149,7 +140,9 @@ gg.prototype._processChatMessage = function(message) {
     chatMessage.nickname = message.user_name;
     chatMessage.id = message.message_id;
     chatMessage.time = new Date(message.timestamp * 1000);
-    chatMessage.chat = this.channel;
+    chatMessage.chat = this.name;
+    chatMessage.channel = this.channel;
+    chatMessage.isPersonal = message.text.indexOf(this.channel + ",") === 0;
     if (typeof(this.onMessage) === "function") {
         this.onMessage(this, chatMessage);
     }
