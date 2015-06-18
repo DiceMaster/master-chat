@@ -89,7 +89,7 @@ sc2tv.prototype._readChat = function () {
         var jsonMessages = jsonData.messages;
         for (var i = jsonMessages.length - 1; i >=0; --i) {
             var chatMessage = new Message();
-            chatMessage.message = jsonMessages[i].message;
+            chatMessage.message = this._htmlify(jsonMessages[i].message);
             chatMessage.nickname = jsonMessages[i].name;
             chatMessage.id = jsonMessages[i].id;
             chatMessage.time = new Date(jsonMessages[i].date);
@@ -101,4 +101,10 @@ sc2tv.prototype._readChat = function () {
             }
         }
     }.bind(this));
+};
+
+sc2tv.prototype._htmlify = function (message) {
+    message = message.replace("[b]", "<strong>");
+    message = message.replace("[/b]", "</strong>");
+    return message;
 };

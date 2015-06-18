@@ -59,8 +59,13 @@ Chat.prototype._onMessage = function (chat, message) {
     this._messages.push(message);
 
     var isScrollAtBottom = this._view.scrollTop() + this._view.innerHeight() >= this._view.prop("scrollHeight");
+
+    var messageClass = "";
     if (message.isPersonal) {
-        this._view.append($("<li>" + message.chat + "| <strong>" + message.nickname + ": " + message.message + "</strong></li>"));
+        messageClass += "message-to-user";
+    }
+    if (messageClass.length > 0) {
+        this._view.append($("<li class='" + messageClass + "'>" + message.chat + "| " + message.nickname + ": " + message.message + "</li>"));
     } else {
         this._view.append($("<li>" + message.chat + "| " + message.nickname + ": " + message.message + "</li>"));
     }
