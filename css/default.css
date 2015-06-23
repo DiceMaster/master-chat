@@ -28,3 +28,7 @@ body {
     overflow: scroll;
     overflow-x: hidden;
 }
+
+.chat_logo {
+    margin: 0 4px 0 0;
+}

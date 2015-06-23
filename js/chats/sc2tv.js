@@ -14,7 +14,7 @@ sc2tv.prototype.name = "sc2tv";
 sc2tv.prototype.displayName = "Sc2tv.ru";
 sc2tv.prototype.channel = null;
 
-sc2tv.prototype.chatImage = "sc2tv.png";
+sc2tv.prototype.chatImage = "sc2tv_logo.png";
 
 sc2tv.prototype.getStatusImage = function (status) {
 

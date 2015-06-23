@@ -6,20 +6,22 @@
     <script src="js/vendor/jquery-2.1.4.min.js"></script>
     <script src="js/vendor/sockjs-0.3.4.min.js"></script>
     <script src="js/message.js"></script>
-    <script src="js/sc2tv.js"></script>
-    <script src="js/gg.js"></script>
-    <script src="js/chat.js"></script>
+    <script src="js/chats/sc2tv.js"></script>
+    <script src="js/chats/gg.js"></script>
+    <script src="js/chatSource.js"></script>
+    <script src="js/chatWindowViewController.js"></script>
     <script>
         $(function () {
-            new Chat($("#message_list"));
+            var chatSource = new ChatSource();
+            new ChatWindowViewController($("#message_list"), chatSource);
         });
     </script>
     <title>MasterChat</title>
 </head>
 <body>
 <div id="chat_container">
-    <ul id="message_list">
-    </ul>
+    <div id="message_list">
+    </div>
 </div>
 </body>
 </html>

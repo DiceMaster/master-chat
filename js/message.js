@@ -9,3 +9,4 @@ Message.prototype.time = null;
 Message.prototype.nickname = null;
 Message.prototype.message = null;
 Message.prototype.isPersonal = false;
+Message.prototype.chatLogo = null;

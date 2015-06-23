@@ -14,7 +14,7 @@ gg.prototype.name = "gg";
 gg.prototype.displayName = "GoodGame.ru";
 gg.prototype.channel = null;
 
-gg.prototype.chatImage = "gg.png";
+gg.prototype.chatImage = "gg_logo.png";
 
 gg.prototype.getStatusImage = function (status) {
 
