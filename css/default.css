@@ -3,7 +3,7 @@ body {
     color: white;
 }
 
-#chat
+#chat_container
 {
     position:fixed;
     padding:0px;
@@ -14,6 +14,10 @@ body {
 
     width: 100%;
     height: 100%;
+
+    background-color: #111111;
+    font-family: Verdana, Arial, sans-serif;
+    color: #cacaca;
 }
 
 #message_list {

@@ -65,9 +65,9 @@ Chat.prototype._onMessage = function (chat, message) {
         messageClass += "message-to-user";
     }
     if (messageClass.length > 0) {
-        this._view.append($("<li class='" + messageClass + "'>" + message.chat + "| " + message.nickname + ": " + message.message + "</li>"));
+        this._view.append($("<li>" + message.chat + "| <span class='nick role-user'>" + message.nickname + ":</span> <span class='" + messageClass + "'>" + message.message + "</span></li>"));
     } else {
-        this._view.append($("<li>" + message.chat + "| " + message.nickname + ": " + message.message + "</li>"));
+        this._view.append($("<li>" + message.chat + "| <span class='nick role-user'>" + message.nickname + ":</span> " + message.message + "</li>"));
     }
     if (isScrollAtBottom) {
         this._view.scrollTop(this._view.prop("scrollHeight"));

@@ -100,7 +100,6 @@
 .nick {
     cursor: pointer;
     font-weight: bold;
-    font-size: 12px;
 }
 #dialog2 .chat-title {
     top: 50px;
