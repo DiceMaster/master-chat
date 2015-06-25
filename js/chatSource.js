@@ -11,11 +11,11 @@ ChatSource.prototype._config = {
     "channels": [
         {
             "type": "sc2tv",
-            "channelId": "garklav"
+            "channelId": "DiceMaster"
         },
         {
             "type": "gg",
-            "channelId": "Happa_"
+            "channelId": "DiceMaster"
         }
     ]
 };
