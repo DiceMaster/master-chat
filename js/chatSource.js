@@ -1,32 +1,20 @@
-var ChatSource = function() {
+var ChatSource = function(configSource) {
     this._chats = {};
     this._messages = [];
-    this._loadConfig();
-    this._initialize();
+    this._configSource = configSource;
+    this._configSource.onload = this._onConfigLoad.bind(this);
 };
 
 ChatSource.prototype.onmessage = null;
 
-ChatSource.prototype._config = {
-    "channels": [
-        {
-            "type": "sc2tv",
-            "channelId": "DiceMaster"
-        },
-        {
-            "type": "gg",
-            "channelId": "DiceMaster"
-        }
-    ]
-};
-
-ChatSource.prototype._loadConfig = function () {
-
+ChatSource.prototype._configSource = null;
+ChatSource.prototype._onConfigLoad = function() {
+    this._initialize();
 };
 
 ChatSource.prototype._initialize = function () {
-    for (var iChat = 0; iChat < this._config.channels.length; ++iChat) {
-        var chatDesc = this._config.channels[iChat];
+    for (var iChat = 0; iChat < this._configSource.config.channels.length; ++iChat) {
+        var chatDesc = this._configSource.config.channels[iChat];
         var chat = eval("new " + chatDesc.type + "('" + chatDesc.channelId + "')");
         chat.onMessage = this._onMessage.bind(this);
         this._chats[chat.name] = chat;

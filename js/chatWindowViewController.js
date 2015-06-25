@@ -15,9 +15,9 @@ ChatWindowViewController.prototype._onmessage = function(message) {
         messageClass += "message-to-user";
     }
     if (messageClass.length > 0) {
-        this._view.append($("<div><img class='chat_logo' src='img/" + message.chatLogo + "'><span class='nick role-user'>" + message.nickname + ":</span> <span class='" + messageClass + "'>" + message.message + "</span></div>"));
+        this._view.append($("<div><div class='status_images'><img class='chat_logo' src='img/" + message.chatLogo + "'><img class='chat_logo' src='img/ranks/Rank0-Rookie.png'></div><span class='nick role-user'>" + message.nickname + ":</span> <span class='" + messageClass + "'>" + message.message + "</span></div>"));
     } else {
-        this._view.append($("<div><img class='chat_logo' src='img/" + message.chatLogo + "'><span class='nick role-user'>" + message.nickname + ":</span> " + message.message + "</div>"));
+        this._view.append($("<div><div class='status_images'><img class='chat_logo' src='img/" + message.chatLogo + "'><img class='chat_logo' src='img/ranks/Rank0-Rookie.png'></div><span class='nick role-user'>" + message.nickname + ":</span> " + message.message + "</div>"));
     }
     if (isScrollAtBottom) {
         this._view.scrollTop(this._view.prop("scrollHeight"));

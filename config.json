@@ -1,0 +1,12 @@
+{
+  "channels": [
+    {
+      "type": "sc2tv",
+      "channelId": "iksslon"
+    },
+    {
+      "type": "gg",
+      "channelId": "Abver"
+    }
+  ]
+}
