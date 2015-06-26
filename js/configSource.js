@@ -37,7 +37,7 @@ ConfigSource.prototype.saveConfig = function () {
 };
 
 ConfigSource.prototype._loadConfig = function (filename) {
-    fs.readFile(filename, function read(err, data) {
+    this._fs.readFile(filename, function read(err, data) {
         if (err) {
             throw err;
         }
