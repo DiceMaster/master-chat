@@ -1,16 +1,16 @@
-var ChatSource = function(configSource) {
+var ChatSource = function(configSource, rankController) {
     this._chats = {};
     this._messages = [];
     this._configSource = configSource;
-    this._configSource.onload = this._onConfigLoad.bind(this);
+    this._rankController = rankController;
+    this._rankController.onrankup = this._onrankup.bind(this);
+    this._initialize();
 };
 
 ChatSource.prototype.onmessage = null;
 
 ChatSource.prototype._configSource = null;
-ChatSource.prototype._onConfigLoad = function() {
-    this._initialize();
-};
+ChatSource.prototype._rankController = null;
 
 ChatSource.prototype._initialize = function () {
     for (var iChat = 0; iChat < this._configSource.config.channels.length; ++iChat) {
@@ -18,6 +18,16 @@ ChatSource.prototype._initialize = function () {
         var chat = eval("new " + chatDesc.type + "('" + chatDesc.channelId + "')");
         chat.onMessage = this._onMessage.bind(this);
         this._chats[chat.name] = chat;
+    }
+};
+
+ChatSource.prototype._onrankup = function (user) {
+    var systemMessage = new Message();
+    systemMessage.isSystem = true;
+    var newRank = this._rankController.getRankById(user.rankId);
+    systemMessage.message = "Пользователь " + user.nickname + " получил звание " + newRank.title;
+    if (typeof(this.onmessage) === "function") {
+        this.onmessage(systemMessage);
     }
 };
 
@@ -43,10 +53,20 @@ ChatSource.prototype._onMessage = function (chat, message) {
     if (this._isMessageOutdated(message)) {
         return;
     }
-    message.chatLogo = this._chats[message.chat].chatImage;
-    this._messages.push(message);
 
-    if (typeof(this.onmessage) === "function") {
-        this.onmessage(message);
-    }
+    this._rankController.processMessage(message);
+
+    this._rankController.getRankId(message.nickname, function (rankId) {
+        message.chatLogo = this._chats[message.chat].chatImage;
+        if (rankId === undefined) {
+            rankId = this._configSource.config.experience.defaultRankId;
+        }
+
+        message.rankIcon = this._rankController.getRankById(rankId).icon;
+        this._messages.push(message);
+
+        if (typeof(this.onmessage) === "function") {
+            this.onmessage(message);
+        }
+    }.bind(this));
 };

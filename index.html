@@ -18,7 +18,8 @@
     <script>
         $(function () {
             var configSource = new ConfigSource("config.json");
-            var chatSource = new ChatSource(configSource);
+            var rankController = new RankController(configSource);
+            var chatSource = new ChatSource(configSource, rankController);
             new ChatWindowViewController($("#message_list"), chatSource);
         });
     </script>

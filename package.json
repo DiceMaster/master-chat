@@ -6,6 +6,10 @@
     "title": "MasterChat",
     "toolbar": false,
     "width": 360,
-    "height": 700
+    "height": 700,
+    "always-on-top": true
+  },
+  "dependencies": {
+    "nedb": "^1.1.2"
   }
 }

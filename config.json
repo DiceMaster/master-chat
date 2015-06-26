@@ -10,50 +10,56 @@
     }
   ],
   "experience": {
-    "message": 10,
-    "smile": 5,
-    "visiting": 50,
-    "ranks": [
-      {
+    "message": 1,
+    "smile": 1,
+    "visiting": 1,
+    "defaultRankId": "rookie",
+    "ranks": {
+      "crab": {
+        "exp": -1,
+        "icon": "img/ranks/Crab.png",
+        "title": "Crab"
+      },
+      "rookie": {
         "exp": 0,
         "icon": "img/ranks/Rank0-Rookie.png",
-        "title": "Rookie"
+        "title": "1 - Rookie"
       },
-      {
-        "exp": 0,
+      "squaddie": {
+        "exp": 2,
         "icon": "img/ranks/Rank1-Squaddie.png",
-        "title": "Squaddie"
+        "title": "2 - Squaddie"
       },
-      {
-        "exp": 0,
+      "corporal": {
+        "exp": 5,
         "icon": "img/ranks/Rank2-Corporal.png",
-        "title": "Corporal"
+        "title": "3 - Corporal"
       },
-      {
-        "exp": 0,
+      "sergeant": {
+        "exp": 10,
         "icon": "img/ranks/Rank3-Sergeant.png",
-        "title": "Sergeant"
+        "title": "4 - Sergeant"
       },
-      {
-        "exp": 0,
+      "lieutenant": {
+        "exp": 15,
         "icon": "img/ranks/Rank4-Lieutenant.png",
-        "title": "Lieutenant"
+        "title": "5 - Lieutenant"
       },
-      {
-        "exp": 0,
+      "captain": {
+        "exp": 20,
         "icon": "img/ranks/Rank5-Captain.png",
-        "title": "Captain"
+        "title": "6 - Captain"
       },
-      {
-        "exp": 0,
+      "major": {
+        "exp": 25,
         "icon": "img/ranks/Rank6-Major.png",
-        "title": "Major"
+        "title": "7 - Major"
       },
-      {
-        "exp": 0,
+      "colonel": {
+        "exp": 30,
         "icon": "img/ranks/Rank7-Colonel.png",
-        "title": "Colonel"
+        "title": "8 - Colonel"
       }
-    ]
+    }
   }
 }
