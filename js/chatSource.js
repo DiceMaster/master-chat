@@ -1,9 +1,9 @@
 var ChatSource = function(configSource, rankController) {
     this._chats = {};
     this._messages = [];
+    this._messageQueue = [];
     this._configSource = configSource;
     this._rankController = rankController;
-    this._rankController.onrankup = this._onrankup.bind(this);
     this._initialize();
 };
 
@@ -21,11 +21,11 @@ ChatSource.prototype._initialize = function () {
     }
 };
 
-ChatSource.prototype._onrankup = function (user) {
+ChatSource.prototype._onRankUp = function (user) {
     var systemMessage = new Message();
     systemMessage.isSystem = true;
     var newRank = this._rankController.getRankById(user.rankId);
-    systemMessage.message = "Пользователь " + user.nickname + " получил звание " + newRank.title;
+    systemMessage.message = "Пользователь " + user.name + " получил звание " + newRank.title;
     if (typeof(this.onmessage) === "function") {
         this.onmessage(systemMessage);
     }
@@ -49,24 +49,48 @@ ChatSource.prototype._isMessageOutdated = function (message) {
     return false;
 };
 
+ChatSource.prototype._messageQueue = null;
+
 ChatSource.prototype._onMessage = function (chat, message) {
-    if (this._isMessageOutdated(message)) {
+    var messageQueueWasEmpty = this._messageQueue.length === 0;
+    this._messageQueue.push(message);
+    if (messageQueueWasEmpty) {
+        this._processMessageQueue();
+    }
+};
+
+ChatSource.prototype._processMessageQueue = function () {
+    if (this._messageQueue.length === 0) {
         return;
     }
 
-    this._rankController.processMessage(message);
+    var message = this._messageQueue[0];
 
-    this._rankController.getRankId(message.nickname, function (rankId) {
-        message.chatLogo = this._chats[message.chat].chatImage;
-        if (rankId === undefined) {
-            rankId = this._configSource.config.experience.defaultRankId;
+    if (this._isMessageOutdated(message)) {
+        this._messageQueue.shift();
+        this._processMessageQueue();
+        return;
+    }
+
+    this._rankController.processMessage(message, {}, function (isRankUp, user) {
+        if (isRankUp) {
+            this._onRankUp(user);
         }
 
-        message.rankIcon = this._rankController.getRankById(rankId).icon;
+        message.chatLogo = this._chats[message.chat].chatImage;
+        if (user.rankId === undefined) {
+            user.rankId = this._configSource.config.experience.defaultRankId;
+        }
+
+        var rank = this._rankController.getRankById(user.rankId);
+        message.rankIcon = rank.icon;
+        message.rankTitle = rank.title;
         this._messages.push(message);
 
         if (typeof(this.onmessage) === "function") {
             this.onmessage(message);
         }
+        this._messageQueue.shift();
+        this._processMessageQueue();
     }.bind(this));
 };
