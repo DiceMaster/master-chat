@@ -1,6 +1,6 @@
 var RankController = function(configSource) {
     this._configSource = configSource;
-    this._sortedRanks = this._sortedRanks(this._configSource.config.experience.ranks);
+    this._sortedRanks = this._sortedRanks(this._configSource.getRanks());
     var Datastore = require('nedb')
         , path = require('path');
     this._db = new Datastore({
@@ -17,11 +17,11 @@ var RankController = function(configSource) {
 RankController.prototype.processMessage = function (message, options, callback) {
     var expGain;
     if (options.firstMessage) {
-        expGain = this._configSource.config.experience.visiting;
+        expGain = this._configSource.getFirstMessageExperience();
     } else if (options.smileOnly) {
-        expGain = this._configSource.config.experience.smile;
+        expGain = this._configSource.getSmileExperience();
     } else {
-        expGain = this._configSource.config.experience.message;
+        expGain = this._configSource.getMessageExperience();
     }
     this._db.update({ name: message.nickname }, { $inc: { exp: expGain } }, { upsert: true });
     this._db.find({ name: message.nickname }, function (err, users) {
@@ -49,7 +49,7 @@ RankController.prototype.getRankId = function (username, callback) {
 };
 
 RankController.prototype.getRankById = function(rankId) {
-    return this._configSource.config.experience.ranks[rankId];
+    return this._configSource.getRanks()[rankId];
 };
 
 RankController.prototype._configSource = null;
@@ -61,7 +61,7 @@ RankController.prototype._updateRank = function (user) {
     if (newRankId !== user.rankId) {
         user.rankId = newRankId;
         this._db.update({ name: user.name }, { $set: { rankId: user.rankId } }, {});
-        return user.rankId !== this._configSource.config.experience.defaultRankId;
+        return user.rankId !== this._configSource.getDefaultRankId();
     }
     return false;
 };
@@ -82,11 +82,11 @@ RankController.prototype._sortedRanks = function(ranks) {
 
 RankController.prototype._getNextRank = function (currentRankId, exp) {
     if (currentRankId !== undefined) {
-        if (this._configSource.config.experience.ranks[currentRankId].exp < 0) {
+        if (this._configSource.getRanks()[currentRankId].exp < 0) {
             return currentRankId;
         }
-        if (this._configSource.config.experience.ranks[currentRankId].exp > exp) {
-            exp = this._configSource.config.experience.ranks[currentRankId].exp;
+        if (this._configSource.getRanks()[currentRankId].exp > exp) {
+            exp = this._configSource.getRanks()[currentRankId].exp;
         }
     }
     var iRank;

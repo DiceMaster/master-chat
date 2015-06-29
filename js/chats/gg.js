@@ -154,8 +154,6 @@ gg.prototype._processChatMessage = function(message) {
     chatMessage.nickname = message.user_name;
     chatMessage.id = message.message_id;
     chatMessage.time = new Date(message.timestamp * 1000);
-    chatMessage.chat = this.name;
-    chatMessage.channel = this.channel;
     chatMessage.isPersonal = message.text.indexOf(this.channel + ",") === 0;
     if (typeof(this.onMessage) === "function") {
         this.onMessage(this, chatMessage);

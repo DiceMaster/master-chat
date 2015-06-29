@@ -13,15 +13,16 @@ ChatSource.prototype._configSource = null;
 ChatSource.prototype._rankController = null;
 
 ChatSource.prototype._initialize = function () {
-    for (var iChat = 0; iChat < this._configSource.config.channels.length; ++iChat) {
-        var chatDesc = this._configSource.config.channels[iChat];
+    var channels = this._configSource.getChannels();
+    for (var iChat = 0; iChat < channels.length; ++iChat) {
+        var chatDesc = channels[iChat];
         var chat = eval("new " + chatDesc.type + "('" + chatDesc.channelId + "')");
         chat.onMessage = this._onMessage.bind(this);
         this._chats[chat.name] = chat;
     }
 };
 
-ChatSource.prototype._onRankUp = function (user) {
+ChatSource.prototype._rankUp = function (user) {
     var systemMessage = new Message();
     systemMessage.isSystem = true;
     var newRank = this._rankController.getRankById(user.rankId);
@@ -53,6 +54,8 @@ ChatSource.prototype._messageQueue = null;
 
 ChatSource.prototype._onMessage = function (chat, message) {
     var messageQueueWasEmpty = this._messageQueue.length === 0;
+    message.chat = chat.name;
+    message.channel = chat.channel;
     this._messageQueue.push(message);
     if (messageQueueWasEmpty) {
         this._processMessageQueue();
@@ -72,25 +75,39 @@ ChatSource.prototype._processMessageQueue = function () {
         return;
     }
 
+    var lastMessageTime = this._configSource.getChannelLastMessageTime(message.chat, message.channel);
+    if (message.time <= lastMessageTime) {
+        this._rankController.getRankId(message.nickname, function (rankId) {
+            this._addMessage(message, rankId);
+            this._messageQueue.shift();
+            this._processMessageQueue();
+        }.bind(this));
+        return;
+    } else {
+        this._configSource.setChannelLastMessageTime(message.chat, message.channel, message.time);
+    }
+
     this._rankController.processMessage(message, {}, function (isRankUp, user) {
         if (isRankUp) {
-            this._onRankUp(user);
+            this._rankUp(user);
         }
-
-        message.chatLogo = this._chats[message.chat].chatImage;
-        if (user.rankId === undefined) {
-            user.rankId = this._configSource.config.experience.defaultRankId;
-        }
-
-        var rank = this._rankController.getRankById(user.rankId);
-        message.rankIcon = rank.icon;
-        message.rankTitle = rank.title;
-        this._messages.push(message);
-
-        if (typeof(this.onmessage) === "function") {
-            this.onmessage(message);
-        }
+        this._addMessage(message, user.rankId);
         this._messageQueue.shift();
         this._processMessageQueue();
     }.bind(this));
 };
+
+ChatSource.prototype._addMessage = function (message, rankId) {
+    if (rankId === undefined) {
+        rankId = this._configSource.getDefaultRankId();
+    }
+    var rank = this._rankController.getRankById(rankId);
+    message.rankIcon = rank.icon;
+    message.rankTitle = rank.title;
+    message.chatLogo = this._chats[message.chat].chatImage;
+    this._messages.push(message);
+
+    if (typeof(this.onmessage) === "function") {
+        this.onmessage(message);
+    }
+}

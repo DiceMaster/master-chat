@@ -87,8 +87,6 @@ sc2tv.prototype._readChat = function () {
             chatMessage.nickname = jsonMessages[i].name;
             chatMessage.id = jsonMessages[i].id;
             chatMessage.time = new Date(jsonMessages[i].date);
-            chatMessage.chat = this.name;
-            chatMessage.channel = this.channel;
             chatMessage.isPersonal = jsonMessages[i].message.toLowerCase().indexOf("[b]" + this.channel.toLowerCase() + "[/b]") === 0;
             if (typeof(this.onMessage) === "function") {
                 this.onMessage(this, chatMessage);
