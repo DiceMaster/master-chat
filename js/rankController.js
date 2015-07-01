@@ -71,8 +71,13 @@ RankController.prototype._sortedRanks = function(ranks) {
     var rankIds = Object.keys(ranks);
     rankIds.forEach(function(rankId, index) {
         var rank = ranks[rankId];
-        rank.id = rankId;
-        unsortedRanks.push(rank);
+        var rankCopy = {
+            "exp": rank.exp,
+            "icon": rank.icon,
+            "title": rank.title
+        };
+        rankCopy.id = rankId;
+        unsortedRanks.push(rankCopy);
     });
     var sortedRanks = unsortedRanks.sort(function(a, b) {
         return a.exp - b.exp;
