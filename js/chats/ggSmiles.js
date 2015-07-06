@@ -120,14 +120,14 @@ var ggSmiles = {
         "animated": true
     }, {
         "bind": "13",
-        "name": "kiss",
+        "name": "sic",
         "donat": 0,
         "premium": 0,
         "paid": 0,
         "animated": false
     }, {
         "bind": "13",
-        "name": "sic",
+        "name": "kiss",
         "donat": 0,
         "premium": 0,
         "paid": 0,
@@ -148,14 +148,21 @@ var ggSmiles = {
         "animated": false
     }, {
         "bind": "16",
-        "name": "jackie",
+        "name": "fp",
         "donat": 0,
         "premium": 0,
         "paid": 0,
         "animated": false
     }, {
         "bind": "16",
-        "name": "fp",
+        "name": "verybad",
+        "donat": 0,
+        "premium": 0,
+        "paid": 0,
+        "animated": true
+    }, {
+        "bind": "16",
+        "name": "jackie",
         "donat": 0,
         "premium": 0,
         "paid": 0,
@@ -183,18 +190,18 @@ var ggSmiles = {
         "animated": true
     }, {
         "bind": "20",
-        "name": "fibo",
-        "donat": 0,
-        "premium": 0,
-        "paid": 0,
-        "animated": false
-    }, {
-        "bind": "20",
         "name": "reynor",
         "donat": 0,
         "premium": 0,
         "paid": 0,
         "animated": true
+    }, {
+        "bind": "20",
+        "name": "fibo",
+        "donat": 0,
+        "premium": 0,
+        "paid": 0,
+        "animated": false
     }, {
         "bind": "21",
         "name": "grumpy",
@@ -204,14 +211,14 @@ var ggSmiles = {
         "animated": false
     }, {
         "bind": "22",
-        "name": "dog1",
+        "name": "whaaat",
         "donat": 0,
         "premium": 0,
         "paid": 0,
         "animated": false
     }, {
         "bind": "22",
-        "name": "whaaat",
+        "name": "dog1",
         "donat": 0,
         "premium": 0,
         "paid": 0,
@@ -386,18 +393,18 @@ var ggSmiles = {
         "animated": false
     }, {
         "bind": "46",
-        "name": "sheep",
-        "donat": 0,
-        "premium": 0,
-        "paid": 0,
-        "animated": false
-    }, {
-        "bind": "46",
         "name": "bomb",
         "donat": 0,
         "premium": 0,
         "paid": 0,
         "animated": true
+    }, {
+        "bind": "46",
+        "name": "sheep",
+        "donat": 0,
+        "premium": 0,
+        "paid": 0,
+        "animated": false
     }, {
         "bind": "47",
         "name": "acordion",
@@ -456,7 +463,14 @@ var ggSmiles = {
         "animated": false
     }, {
         "bind": "54",
-        "name": "gamepad",
+        "name": "gamepad1",
+        "donat": 0,
+        "premium": 0,
+        "paid": 0,
+        "animated": false
+    }, {
+        "bind": "55",
+        "name": "gamepad2",
         "donat": 0,
         "premium": 0,
         "paid": 0,
@@ -647,14 +661,14 @@ var ggSmiles = {
         }],
         "1302": [{
             "bind": "1",
-            "name": "cobra2",
+            "name": "cobra1",
             "donat": 0,
             "premium": 1,
             "paid": 0,
             "animated": false
         }, {
             "bind": "1",
-            "name": "cobra1",
+            "name": "cobra2",
             "donat": 0,
             "premium": 1,
             "paid": 0,
@@ -714,14 +728,14 @@ var ggSmiles = {
             "animated": true
         }, {
             "bind": "1",
-            "name": "grind1",
+            "name": "grind2",
             "donat": 0,
             "premium": 1,
             "paid": 0,
             "animated": true
         }, {
             "bind": "1",
-            "name": "grind2",
+            "name": "grind1",
             "donat": 0,
             "premium": 1,
             "paid": 0,
@@ -737,18 +751,18 @@ var ggSmiles = {
         }],
         "1501": [{
             "bind": "1",
-            "name": "vivi1",
-            "donat": 0,
-            "premium": 1,
-            "paid": 0,
-            "animated": true
-        }, {
-            "bind": "1",
             "name": "vivi2",
             "donat": 0,
             "premium": 1,
             "paid": 0,
             "animated": false
+        }, {
+            "bind": "1",
+            "name": "vivi1",
+            "donat": 0,
+            "premium": 1,
+            "paid": 0,
+            "animated": true
         }],
         "1508": [{
             "bind": "1",
@@ -852,6 +866,14 @@ var ggSmiles = {
             "premium": 1,
             "paid": 0,
             "animated": false
+        }],
+        "1699": [{
+            "bind": "1",
+            "name": "zeruel1",
+            "donat": 0,
+            "premium": 1,
+            "paid": 0,
+            "animated": true
         }],
         "1717": [{
             "bind": "73",
@@ -1287,13 +1309,6 @@ var ggSmiles = {
         }],
         "3893": [{
             "bind": "1",
-            "name": "scatman4",
-            "donat": 0,
-            "premium": 1,
-            "paid": 0,
-            "animated": false
-        }, {
-            "bind": "1",
             "name": "scatman5",
             "donat": 0,
             "premium": 1,
@@ -1302,6 +1317,13 @@ var ggSmiles = {
         }, {
             "bind": "1",
             "name": "scatman3",
+            "donat": 0,
+            "premium": 1,
+            "paid": 0,
+            "animated": false
+        }, {
+            "bind": "1",
+            "name": "scatman4",
             "donat": 0,
             "premium": 1,
             "paid": 0,
@@ -1367,14 +1389,14 @@ var ggSmiles = {
             "animated": false
         }, {
             "bind": "1",
-            "name": "robo",
+            "name": "why",
             "donat": 0,
             "premium": 1,
             "paid": 0,
             "animated": false
         }, {
             "bind": "1",
-            "name": "why",
+            "name": "robo",
             "donat": 0,
             "premium": 1,
             "paid": 0,
@@ -1444,6 +1466,13 @@ var ggSmiles = {
             "premium": 1,
             "paid": 0,
             "animated": false
+        }, {
+            "bind": "1",
+            "name": "bessa",
+            "donat": 0,
+            "premium": 0,
+            "paid": 0,
+            "animated": true
         }, {
             "bind": "83",
             "name": "vault",
