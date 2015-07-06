@@ -137,6 +137,14 @@ RankController.prototype._importUsers = function () {
         }
 
         // Conversion
+        var name = user.name;
+        user.name = user.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '');
+        user.name = user.name.trim();
+        if (user.name.length == 0) {
+            console.log(name);
+            return;
+        }
+
         var convertedRankId = rankToNewRank[user.level];
         var convertedRank = this._configSource.getRanks()[convertedRankId];
         var convertedExp = user.exp > convertedRank.exp ? convertedRank.exp : user.exp;
