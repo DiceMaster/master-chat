@@ -41,3 +41,19 @@ body {
 .system_message {
     color: lime;
 }
+
+a:link {
+    color: #FFCC66;
+}
+
+a:visited {
+    color: #CC9900;
+}
+
+a:hover {
+    color: #FFCC99;
+}
+
+a:active {
+    color: #FFCC66;
+}

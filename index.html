@@ -18,6 +18,13 @@
     <script src="js/chatWindowViewController.js"></script>
     <script>
         $(function () {
+            var gui = require('nw.gui');
+            var win = gui.Window.get();
+            win.on('new-win-policy', function(frame, url, policy){
+                policy.ignore();
+                gui.Shell.openExternal( url );
+            });
+
             var configSource = new ConfigSource("config.json");
             var rankController = new RankController(configSource);
             var chatSource = new ChatSource(configSource, rankController);

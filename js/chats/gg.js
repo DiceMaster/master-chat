@@ -89,11 +89,11 @@ gg.prototype._connect = function () {
         setInterval(this._connect.bind(this), this._CHANNEL_RETRY_INTERVAL);
     }.bind(this);
     this._socket.onmessage = function(evt) {
-        this._processGoodGameMessage(JSON.parse(evt.data));
+        this._processWebSocketMessage(JSON.parse(evt.data));
     }.bind(this);
 };
 
-gg.prototype._processGoodGameMessage = function(message) {
+gg.prototype._processWebSocketMessage = function(message) {
     if (this._isStopped) {
         return;
     }

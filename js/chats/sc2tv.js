@@ -96,14 +96,15 @@ sc2tv.prototype._readChat = function () {
 };
 
 sc2tv.prototype._URLPatternStr = '((?:(?:ht|f)tps?)(?:://))' + '(((?:(?:[a-z\u0430-\u0451\\d](?:[a-z\u0430-\u0451\\d-]*[a-z\u0430-\u0451\\d])*)\\.)+(?:[a-z]{2,}|\u0440\u0444)' + '|(?:(?:\\d{1,3}\\.){3}\\d{1,3}))' + '(:\\d+)?' + '(/[-a-z\u0430-\u0451\\d%_~\\+\\(\\):]*(?:[\\.,][-a-z\u0430-\u0451\\d%_~\\+\\(\\):]+)*)*' + '(\\?(?:&amp;|&quot;|&#039|[&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?' + '(#(?:&amp;|&quot;|&#039|[\*!\(\)\/&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?)';
-sc2tv.prototype._bbCodeURLPattern = new RegExp('\\[url\\]' + this._URLPatternStr + '\\[\/url\\]()', 'gi');
-sc2tv.prototype._bbCodeURLWithTextPattern = new RegExp('\\[url=' + this._URLPatternStr + '\\]([\u0020-\u007E\u0400-\u045F\u0490\u0491\u0207\u0239\u2012\u2013\u2014]+?)\\[\/url\\]', 'gi');
+sc2tv.prototype._bbCodeURLPattern = new RegExp('\\[url\\]' + sc2tv.prototype._URLPatternStr + '\\[\/url\\]()', 'gi');
+sc2tv.prototype._bbCodeURLWithTextPattern = new RegExp('\\[url=' + sc2tv.prototype._URLPatternStr + '\\]([\u0020-\u007E\u0400-\u045F\u0490\u0491\u0207\u0239\u2012\u2013\u2014]+?)\\[\/url\\]', 'gi');
 sc2tv.prototype._URLPattern = new RegExp(this._URLPatternStr, 'gi');
 sc2tv.prototype._bbCodeBoldPattern = new RegExp('\\[b\\]([\\s\\S]+?)\\[/b\\]', 'gi');
 
 sc2tv.prototype._bbCodeToHtml = function (str) {
     str = str.replace(this._bbCodeURLWithTextPattern, this._bbCodeURLToHtml);
     str = str.replace(this._bbCodeURLPattern, this._bbCodeURLToHtml);
+//    str = str.replace(this._URLPattern, this._bbCodeURLToHtml);
     str = str.replace(this._bbCodeBoldPattern, '<strong>$1</strong>');
     return str;
 }
