@@ -1,8 +1,10 @@
-var ConfigSource = function(filename) {
+var ConfigSource = function(filename, appLifeCycleService) {
     this._configPath = filename;
     this._fs = require("fs");
 
     this._config = this._loadConfig(filename);
+    this._appLifeCycleService = appLifeCycleService;
+    this._appLifeCycleService.onClose(this._saveConfig.bind(this));
     setInterval(this._saveConfig.bind(this), this._configSaveInterval);
 };
 
@@ -72,6 +74,7 @@ ConfigSource.prototype._isConfigChanged = false;
 ConfigSource.prototype._configSaveInterval = 10000;
 ConfigSource.prototype._configPath = null;
 ConfigSource.prototype._fs = null;
+ConfigSource.prototype._appLifeCycleService = null;
 
 ConfigSource.prototype._getChannelIndex = function (type, channelId) {
     var channels = this._config.channels || [];

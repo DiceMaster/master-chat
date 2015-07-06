@@ -15,6 +15,7 @@
     <script src="js/chats/ggSmiles.js"></script>
     <script src="js/chats/gg.js"></script>
     <script src="js/rankController.js"></script>
+    <script src="js/appLifeCycleService.js"></script>
     <script src="js/configSource.js"></script>
     <script src="js/chatSource.js"></script>
     <script src="js/chatWindowViewController.js"></script>
@@ -27,7 +28,8 @@
                 gui.Shell.openExternal( url );
             });
 
-            var configSource = new ConfigSource("config.json");
+            var appLifeCycleService = new AppLifeCycleService();
+            var configSource = new ConfigSource("config.json", appLifeCycleService);
             var rankController = new RankController(configSource);
             var chatSource = new ChatSource(configSource, rankController);
             new ChatWindowViewController($("#message_list"), chatSource);
