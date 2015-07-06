@@ -42,18 +42,12 @@ body {
     color: lime;
 }
 
-a:link {
-    color: #FFCC66;
-}
-
+a:link,
 a:visited {
-    color: #CC9900;
+    color: #73adff;
 }
 
-a:hover {
-    color: #FFCC99;
-}
-
+a:hover,
 a:active {
-    color: #FFCC66;
+    color: #ffffff;
 }

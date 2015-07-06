@@ -1,10 +1,9 @@
 var RankController = function(configSource) {
     this._configSource = configSource;
     this._sortedRanks = this._sortedRanks(this._configSource.getRanks());
-    var Datastore = require('nedb')
-        , path = require('path');
+    var Datastore = require('nedb');
     this._db = new Datastore({
-        filename: path.join(require('nw.gui').App.dataPath, 'ranks.db'),
+        filename: 'ranks.db',
         autoload: true
     });
     this._db.ensureIndex({ fieldName: 'name', unique: true }, function (err) {
@@ -12,6 +11,8 @@ var RankController = function(configSource) {
             alert("Can't create indexes");
         }
     });
+
+    this._importUsers();
 };
 
 RankController.prototype.processMessage = function (message, options, callback) {
@@ -106,4 +107,56 @@ RankController.prototype._getNextRank = function (currentRankId, exp) {
     } else {
         return undefined;
     }
+};
+
+RankController.prototype._importUsers = function () {
+    var usersFileName = "ranks.json";
+    var conversionFileName = "ranksToNewRanks.json";
+    var fs = require("fs");
+    if (!fs.existsSync(usersFileName)) {
+        return;
+    }
+    if (!fs.existsSync(conversionFileName)) {
+        return;
+    }
+    var usersData = fs.readFileSync(usersFileName);
+    var importedUsers = JSON.parse(usersData);
+    var conversionData = fs.readFileSync(conversionFileName);
+    var rankToNewRank = JSON.parse(conversionData);
+
+    var usersPerLevel = {};
+    var maxExp = 0;
+    var maxExpName = null;
+    importedUsers.forEach( function( user )
+    {
+        usersPerLevel[user.level] = usersPerLevel[user.level] || 0;
+        usersPerLevel[user.level]++;
+        if (user.exp > maxExp) {
+            maxExp = user.exp;
+            maxExpName = user.name;
+        }
+
+        // Conversion
+        var convertedRankId = rankToNewRank[user.level];
+        var convertedRank = this._configSource.getRanks()[convertedRankId];
+        var convertedExp = user.exp > convertedRank.exp ? convertedRank.exp : user.exp;
+
+        var convertedUser = new User();
+        convertedUser.name = user.name;
+        convertedUser.rankId = convertedRankId;
+        convertedUser.exp = convertedExp;
+
+        this._db.update({ name: user.name }, convertedUser, { upsert: true }, function (err, numReplaced, upsert) {
+
+        });
+    }.bind(this));
+    var ranksStats = {
+        "usersCount": importedUsers.length,
+        "hightestRank": {
+            "name": maxExpName,
+            "exp": maxExp
+        },
+        "usersPerLevel": usersPerLevel
+    };
+    console.log(JSON.stringify(ranksStats, null, 2));
 };
