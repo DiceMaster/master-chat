@@ -69,6 +69,10 @@ ConfigSource.prototype.getFirstMessageExperience = function () {
     return this._config.experience.firstMessage;
 };
 
+ConfigSource.prototype.getTheme = function () {
+    return this._config.theme;
+};
+
 ConfigSource.prototype._config = null;
 ConfigSource.prototype._isConfigChanged = false;
 ConfigSource.prototype._configSaveInterval = 10000;

@@ -1,4 +1,5 @@
 {
+  "theme": "default",
   "channels": [
     {
       "type": "sc2tv",

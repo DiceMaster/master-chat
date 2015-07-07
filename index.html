@@ -18,6 +18,8 @@
     <script src="js/appLifeCycleService.js"></script>
     <script src="js/configSource.js"></script>
     <script src="js/chatSource.js"></script>
+    <script src="js/vendor/handlebars.3.0.3.min.js"></script>
+    <script src="js/theme.js"></script>
     <script src="js/chatWindowViewController.js"></script>
     <script>
         $(function () {
@@ -32,7 +34,7 @@
             var configSource = new ConfigSource("config.json", appLifeCycleService);
             var rankController = new RankController(configSource);
             var chatSource = new ChatSource(configSource, rankController);
-            new ChatWindowViewController($("#message_list"), chatSource);
+            new ChatWindowViewController($("#message_list"), chatSource, configSource);
         });
     </script>
     <title>MasterChat</title>
