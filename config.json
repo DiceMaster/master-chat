@@ -22,37 +22,37 @@
         "title": "Crab"
       },
       "rookie": {
-        "exp": 500,
+        "exp": 0,
         "icon": "img/ranks/Rank0-Rookie.png",
         "title": "1 - Rookie"
       },
       "squaddie": {
-        "exp": 965,
+        "exp": 500,
         "icon": "img/ranks/Rank1-Squaddie.png",
         "title": "2 - Squaddie"
       },
       "corporal": {
-        "exp": 1864,
+        "exp": 1077,
         "icon": "img/ranks/Rank2-Corporal.png",
         "title": "3 - Corporal"
       },
       "sergeant": {
-        "exp": 3598,
+        "exp": 2321,
         "icon": "img/ranks/Rank3-Sergeant.png",
         "title": "4 - Sergeant"
       },
       "lieutenant": {
-        "exp": 6947,
+        "exp": 5000,
         "icon": "img/ranks/Rank4-Lieutenant.png",
         "title": "5 - Lieutenant"
       },
       "captain": {
-        "exp": 13413,
+        "exp": 10772,
         "icon": "img/ranks/Rank5-Captain.png",
         "title": "6 - Captain"
       },
       "major": {
-        "exp": 25897,
+        "exp": 23208,
         "icon": "img/ranks/Rank6-Major.png",
         "title": "7 - Major"
       },

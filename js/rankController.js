@@ -96,7 +96,7 @@ RankController.prototype._getNextRank = function (currentRankId, exp) {
         }
     }
     var iRank;
-    for (iRank = 0; iRank < this._sortedRanks.length - 1; ++iRank) {
+    for (iRank = 0; iRank < this._sortedRanks.length; ++iRank) {
         if (this._sortedRanks[iRank].exp > exp) {
             break;
         }
@@ -137,6 +137,7 @@ RankController.prototype._importUsers = function () {
         }
 
         // Conversion
+        user.exp *= 10;
         var name = user.name;
         user.name = user.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '');
         user.name = user.name.trim();
