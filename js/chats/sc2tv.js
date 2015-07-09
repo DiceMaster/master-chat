@@ -1,10 +1,27 @@
 var sc2tv = function(channel) {
     this._smileHtmlReplacement = [];
     this.channel = channel;
-    this._buildSmilesReplacement();
     this._findChannelId(this._CHANNEL_URL + channel, function (channelId) {
+        if (channelId === undefined) {
+            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
+            return;
+        }
         this._channelId = channelId;
-        this._startChat();
+        this._findSmilesDefinitionUrl(this._CHAT_URL + "index.htm?channelId=" + this._channelId, function (smileDefinitionUrl){
+            if (smileDefinitionUrl === undefined) {
+                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить адрес списка смайлов.");
+                return;
+            }
+            this._loadSmilesDefinition(this._CHAT_URL + smileDefinitionUrl, function (smileDefinition) {
+                if (smileDefinition === undefined) {
+                    this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить список поддерживаемых смайлов.");
+                    return;
+                }
+                this._smileDefinition = smileDefinition;
+                this._buildSmilesReplacement(smileDefinition);
+                this._startChat();
+            }.bind(this));
+        }.bind(this));
     }.bind(this));
 };
 
@@ -29,31 +46,89 @@ sc2tv.prototype._CHAT_RELOAD_INTERVAL = 5000;
 
 sc2tv.prototype._channelId = null;
 sc2tv.prototype._chatTimerId = null;
-sc2tv.prototype._channelTimerId = null;
 sc2tv.prototype._isStopped = false;
+
+sc2tv.prototype._fireErrorMessage = function (messageText) {
+    var errorMessage = new Message();
+    errorMessage.message = messageText;
+    errorMessage.isError;
+    if (typeof(this.onMessage) === "function") {
+        this.onMessage(this, errorMessage);
+    }
+};
 
 sc2tv.prototype._findChannelId = function (url, onFound) {
     $.get(url).done( function ( data ) {
         if (this._isStopped) {
             return;
         }
-        var chatIframeRegex = /channelId=[0-9]*&/;
-        var matches = data.match(chatIframeRegex);
-        if (matches.length == 0) {
+        var channelIdMatch = data.match(/channelId=([0-9]*)&/);
+        if (channelIdMatch === null) {
+            if (typeof(onFound) === "function") {
+                onFound(undefined);
+            }
             return;
         }
-        var match = matches[0];
-        match = match.substring(10, match.length - 1);
         if (typeof(onFound) === "function") {
-            onFound(match);
+            onFound(channelIdMatch[1]);
         }
     }.bind(this)).fail( function () {
         if (this._isStopped) {
             return;
         }
-        this._channelTimerId = setInterval(function() {
-            this._findChannelId(url, onFound);
-        }.bind(this), this._CHANNEL_RETRY_INTERVAL);
+        if (typeof(onFound) === "function") {
+            onFound(undefined);
+        }
+    }.bind(this));
+};
+
+sc2tv.prototype._findSmilesDefinitionUrl = function(url, onLoad) {
+    $.get(url).done( function ( data ) {
+        if (this._isStopped) {
+            return;
+        }
+        var smileDefinitionUrlMatch = data.match(/src="(js\/smiles.js\?v=[0-9]*)">/);
+        if (smileDefinitionUrlMatch === null) {
+            if (typeof(onLoad) === "function") {
+                onLoad(undefined);
+            }
+            return;
+        }
+        if (typeof(onLoad) === "function") {
+            onLoad(smileDefinitionUrlMatch[1]);
+        }
+    }.bind(this)).fail( function () {
+        if (this._isStopped) {
+            return;
+        }
+        if (typeof(onLoad) === "function") {
+            onLoad(undefined);
+        }
+    }.bind(this));
+};
+
+sc2tv.prototype._loadSmilesDefinition = function(url, onLoad) {
+    $.get(url).done( function ( data ) {
+        if (this._isStopped) {
+            return;
+        }
+        var smileDefinitionMatch = data.match(/var smiles=(\[{.*}]);/);
+        if (smileDefinitionMatch === null) {
+            if (typeof(onLoad) === "function") {
+                onLoad(undefined);
+            }
+            return;
+        }
+        if (typeof(onLoad) === "function") {
+            onLoad(JSON.parse(smileDefinitionMatch[1]));
+        }
+    }.bind(this)).fail( function () {
+        if (this._isStopped) {
+            return;
+        }
+        if (typeof(onLoad) === "function") {
+            onLoad(undefined);
+        }
     }.bind(this));
 };
 
@@ -65,7 +140,8 @@ sc2tv.prototype._startChat = function () {
 sc2tv.prototype._stopChat = function () {
     this._isStopped = true;
     clearInterval(this._chatTimerId);
-    clearInterval(this._channelTimerId);
+    clearTimeout(this._channelTimerId);
+    clearTimeout(this._smileDefinitionUrlTimerId);
 };
 
 sc2tv.prototype._readChat = function () {
@@ -123,9 +199,10 @@ sc2tv.prototype._bbCodeURLToHtml = function (str, proto, url, host, port, path, 
 }
 
 sc2tv.prototype._CHAT_IMG_PATH = 'http://chat.sc2tv.ru/img/';
+sc2tv.prototype._smileDefinition = null;
 sc2tv.prototype._smileHtmlReplacement = null;
 
-sc2tv.prototype._buildSmilesReplacement = function() {
+sc2tv.prototype._buildSmilesReplacement = function(sc2tvSmiles) {
     for (i = 0; i < sc2tvSmiles.length; i++) {
         this._smileHtmlReplacement[i] = '<img src="' + this._CHAT_IMG_PATH + sc2tvSmiles[i].img + '" width="' + sc2tvSmiles[i].width + '" height="' + sc2tvSmiles[i].height + '" class="sc2tv-smile"/>';
     }
@@ -135,8 +212,8 @@ sc2tv.prototype._htmlify = function (message) {
     message = this._bbCodeToHtml(message);
     message = message.replace(/:s(:[-a-z0-9]{2,}:)/gi, function(match, code) {
         var indexOfSmileWithThatCode = -1;
-        for (var i = 0; i < sc2tvSmiles.length; i++) {
-            if (sc2tvSmiles[i].code == code) {
+        for (var i = 0; i < this._smileDefinition.length; i++) {
+            if (this._smileDefinition[i].code == code) {
                 indexOfSmileWithThatCode = i;
                 break;
             }
