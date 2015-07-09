@@ -1,0 +1,33 @@
+.chat_logo {
+    margin: 0 4px 0 0;
+}
+
+.username {
+    font-weight: bold;
+}
+
+.username-normal {
+    color: #7797be!important;
+}
+
+.system_message {
+    color: lime;
+}
+
+.error_message {
+    color: crimson;
+}
+
+.message-to-user {
+    color: #E7BA00;
+}
+
+a:link,
+a:visited {
+    color: #73adff;
+}
+
+a:hover,
+a:active {
+    color: #ffffff;
+}

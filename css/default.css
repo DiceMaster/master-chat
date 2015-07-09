@@ -33,21 +33,3 @@ body {
 #message_list > div {
     margin-bottom: 5px;
 }
-
-.chat_logo {
-    margin: 0 4px 0 0;
-}
-
-.system_message {
-    color: lime;
-}
-
-a:link,
-a:visited {
-    color: #73adff;
-}
-
-a:hover,
-a:active {
-    color: #ffffff;
-}

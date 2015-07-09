@@ -2,7 +2,7 @@ var sc2tv = function(channel) {
     this._smileHtmlReplacement = [];
     this.channel = channel;
     this._findChannelId(this._CHANNEL_URL + channel, function (channelId) {
-        if (channelId !== undefined) {
+        if (channelId === undefined) {
             this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
             return;
         }
@@ -51,7 +51,7 @@ sc2tv.prototype._isStopped = false;
 sc2tv.prototype._fireErrorMessage = function (messageText) {
     var errorMessage = new Message();
     errorMessage.message = messageText;
-    errorMessage.isError;
+    errorMessage.isError = true;
     if (typeof(this.onMessage) === "function") {
         this.onMessage(this, errorMessage);
     }

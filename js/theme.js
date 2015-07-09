@@ -18,7 +18,7 @@ Theme.prototype._messageTemplate = null;
 
 Theme.prototype._loadTheme = function () {
     var fs = require("fs");
-    this._css = fs.readFileSync("templates/" + this.name + "/style.css");
+    this._css = fs.readFileSync("templates/" + this.name + "/style.css", "UTF-8");
     var messageTemplate = fs.readFileSync("templates/" + this.name + "/message.hbs", "UTF-8");
     this._messageTemplate = Handlebars.compile(messageTemplate);
 };

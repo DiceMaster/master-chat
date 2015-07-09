@@ -1,6 +1,13 @@
+{{#if isSystem}}
+<div class='system_message'>{{{message}}}</div>
+{{else}}{{#if isError}}
+<div class='error_message'>{{{message}}}</div>
+{{else}}
 <div>
     <img class='chat_logo' src='img/{{chatLogo}}'>
-    <img width=20 height=20 class='chat_logo' title='{{rankTitle}}' src='{{rankIcon}}'>
-    <span class='nick role-user'>{{nickname}}</span>
+    <img class='chat_logo' title='{{rankTitle}}' src='{{rankIcon}}'>
+    <span class='nick username-normal'>{{nickname}}</span>
     <span{{#if isPersonal}} class='message-to-user'{{/if}}>{{{message}}}</span>
 </div>
+{{/if}}
+{{/if}}
