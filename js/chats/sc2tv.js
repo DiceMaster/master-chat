@@ -2,19 +2,19 @@ var sc2tv = function(channel) {
     this._smileHtmlReplacement = [];
     this.channel = channel;
     this._findChannelId(this._CHANNEL_URL + channel, function (channelId) {
-        if (channelId === undefined) {
-            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
+        if (channelId !== undefined) {
+            this._fireErrorMessage("РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє РєР°РЅР°Р»Сѓ " + channel + " РЅР° Sc2tv. РќРµ СѓРґР°РµС‚СЃСЏ РїРѕР»СѓС‡РёС‚СЊ С‡РёСЃР»РѕРІРѕР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєР°РЅР°Р»Р°.");
             return;
         }
         this._channelId = channelId;
         this._findSmilesDefinitionUrl(this._CHAT_URL + "index.htm?channelId=" + this._channelId, function (smileDefinitionUrl){
             if (smileDefinitionUrl === undefined) {
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить адрес списка смайлов.");
+                this._fireErrorMessage("РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє РєР°РЅР°Р»Сѓ " + channel + " РЅР° Sc2tv. РќРµ СѓРґР°РµС‚СЃСЏ РїРѕР»СѓС‡РёС‚СЊ Р°РґСЂРµСЃ СЃРїРёСЃРєР° СЃРјР°Р№Р»РѕРІ.");
                 return;
             }
             this._loadSmilesDefinition(this._CHAT_URL + smileDefinitionUrl, function (smileDefinition) {
                 if (smileDefinition === undefined) {
-                    this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить список поддерживаемых смайлов.");
+                    this._fireErrorMessage("РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє РєР°РЅР°Р»Сѓ " + channel + " РЅР° Sc2tv. РќРµ СѓРґР°РµС‚СЃСЏ РїРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹С… СЃРјР°Р№Р»РѕРІ.");
                     return;
                 }
                 this._smileDefinition = smileDefinition;
