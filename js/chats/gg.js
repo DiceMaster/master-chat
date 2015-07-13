@@ -1,9 +1,25 @@
 var gg = function(channel) {
     this.channel = channel;
-    this._allSmiles = this._buildAllSmiles(ggSmiles);
-    this._findChannelId(this._CHANNEL_URL.replace("%channel%", channel), function (channelId) {
+    this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel), function (channelId) {
+        if (channelId === undefined) {
+            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. Не удалось получить идентификатор чата.");
+            return;
+        }
         this._channelId = channelId;
-        this._connect();
+        this._findSmileStylesAndDefinitionsURL(this._CHANNEL_URL + channel, function(smileDefinitionUrl, globalSmilesCssUrl, channelsSmilesCssUrl) {
+            if (smileDefinitionUrl === undefined ||
+                globalSmilesCssUrl === undefined ||
+                channelsSmilesCssUrl === undefined) {
+
+                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. Не удалось получить адрес списка или стилей смайлов.");
+                return;
+            }
+            this._loadSmileStylesAndDefinitions(smileDefinitionUrl, globalSmilesCssUrl, channelsSmilesCssUrl, function (ggSmiles, combinedCss) {
+                this._allSmiles = this._buildAllSmiles(ggSmiles);
+                this._applyStyle(combinedCss);
+                this._connect();
+            }.bind(this));
+        }.bind(this));
     }.bind(this));
 
 };
@@ -36,14 +52,23 @@ gg.prototype.stopChat = function () {
 };
 
 gg.prototype._CHAT_URL = "ws://goodgame.ru:8080/";
-gg.prototype._CHANNEL_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
-sc2tv.prototype._RETRY_INTERVAL = 10000;
+gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
+gg.prototype._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
+gg.prototype._RETRY_INTERVAL = 10000;
 
 gg.prototype._socket = null;
 gg.prototype._channelId = null;
-gg.prototype._channelTimerId = null;
 gg.prototype._isStopped = false;
 gg.prototype._allSmiles = null;
+
+gg.prototype._fireErrorMessage = function (messageText) {
+    var errorMessage = new Message();
+    errorMessage.message = messageText;
+    errorMessage.isError = true;
+    if (typeof(this.onMessage) === "function") {
+        this.onMessage(this, errorMessage);
+    }
+};
 
 gg.prototype._buildAllSmiles = function (ggSmiles) {
     var allSmiles = [];
@@ -54,6 +79,15 @@ gg.prototype._buildAllSmiles = function (ggSmiles) {
         });
     }
     return allSmiles.concat(ggSmiles.Smiles);
+};
+
+gg.prototype._applyStyle = function(style) {
+    if (gg._styleElement === undefined) {
+        gg._styleElement = document.createElement("style");
+        gg._styleElement.setAttribute("type", "text/css");
+        document.getElementsByTagName('head')[0].appendChild(gg._styleElement);
+    }
+    gg._styleElement.innerHTML = style;
 };
 
 gg.prototype._findChannelId = function (url, onFound) {
@@ -76,10 +110,81 @@ gg.prototype._findChannelId = function (url, onFound) {
         if (this._isStopped) {
             return;
         }
-        this._channelTimerId = setInterval(function() {
-            this._findChannelId(url, onFound);
-        }.bind(this), this._RETRY_INTERVAL);
+        if (typeof(onFound) === "function") {
+            onFound(undefined);
+        }
     }.bind(this));
+};
+
+gg.prototype._findSmileStylesAndDefinitionsURL = function (url, onFound) {
+    $.ajax(url).done( function ( data ) {
+        if (this._isStopped) {
+            return;
+        }
+        var smileDefinitionUrlMatch = data.match(/src="(http:\/\/goodgame\.ru\/js\/minified\/global\.js\?[a-z0-9]*)"/i);
+        if (smileDefinitionUrlMatch === null) {
+            if (typeof(onLoad) === "function") {
+                onLoad(undefined, undefined, undefined);
+            }
+            return;
+        }
+        var globalSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/common_smiles\.css\?[a-z0-9]*)"/i);
+        if (globalSmilesCssUrlMatch === null) {
+            if (typeof(onLoad) === "function") {
+                onLoad(undefined, undefined, undefined);
+            }
+            return;
+        }
+        var channelsSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/channels_smiles\.css\?[a-z0-9]*)"/i);
+        if (channelsSmilesCssUrlMatch === null) {
+            if (typeof(onLoad) === "function") {
+                onLoad(undefined, undefined, undefined);
+            }
+            return;
+        }
+        if (typeof(onFound) === "function") {
+            onFound(smileDefinitionUrlMatch[1], globalSmilesCssUrlMatch[1], channelsSmilesCssUrlMatch[1]);
+        }
+    }.bind(this)).fail( function () {
+        if (this._isStopped) {
+            return;
+        }
+        if (typeof(onLoad) === "function") {
+            onLoad(undefined, undefined, undefined);
+        }
+    }.bind(this));
+};
+
+gg.prototype._loadSmileStylesAndDefinitions = function (definitionUrl, globalCssUrl, channelsCssUrl, onFound) {
+    $.when($.get(definitionUrl),
+           $.get(globalCssUrl),
+           $.get(channelsCssUrl)
+    ).done(function(smilesDefinition, globalCss, channelsCss) {
+            if (this._isStopped) {
+                return;
+            }
+            //var smileDefinitionMatch = smilesDefinition[0].match(/var\s+Global\s*=\s*(\{.+)/);
+            var smileDefinitionMatch = smilesDefinition[0].match(/var\s+Global\s*=\s*(\{[\s\S]+});/);
+            if (smileDefinitionMatch === null) {
+                if (typeof(onLoad) === "function") {
+                    onLoad(undefined);
+                }
+                return;
+            }
+            var ggSmiles = eval("(" + smileDefinitionMatch[1] + ")");
+            var combinedCss = globalCss + "\n" + channelsCss;
+            if (typeof(onFound) === "function") {
+                onFound(ggSmiles, combinedCss);
+            }
+        }.bind(this)
+    ).fail(function() {
+            if (this._isStopped) {
+                return;
+            }
+            if (typeof(onFound) === "function") {
+                onFound(undefined, undefined);
+            }
+        });
 };
 
 gg.prototype._connect = function () {

@@ -87,7 +87,7 @@ sc2tv.prototype._findSmilesDefinitionUrl = function(url, onLoad) {
         if (this._isStopped) {
             return;
         }
-        var smileDefinitionUrlMatch = data.match(/src="(js\/smiles.js\?v=[0-9]*)">/);
+        var smileDefinitionUrlMatch = data.match(/src="(js\/smiles\.js\?v=[0-9]*)">/i);
         if (smileDefinitionUrlMatch === null) {
             if (typeof(onLoad) === "function") {
                 onLoad(undefined);
@@ -112,7 +112,7 @@ sc2tv.prototype._loadSmilesDefinition = function(url, onLoad) {
         if (this._isStopped) {
             return;
         }
-        var smileDefinitionMatch = data.match(/var smiles=(\[{.*}]);/);
+        var smileDefinitionMatch = data.match(/var smiles=(\[{[\s\S]*}]);/);
         if (smileDefinitionMatch === null) {
             if (typeof(onLoad) === "function") {
                 onLoad(undefined);
