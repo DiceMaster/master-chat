@@ -12,7 +12,7 @@ var RankController = function(configSource) {
         }
     });
 
-    this._importUsers();
+    //this._importUsers();
 };
 
 RankController.prototype.processMessage = function (message, options, callback) {
