@@ -4,25 +4,27 @@ var sc2tv = function(channel) {
     this._promise = require("promise");
     this._request = require('request');
 
-    this._findChannelId(this._CHANNEL_URL + channel).then(function (channelId) {
-        this._channelId = channelId;
-        var getStreamerName = this._getStreamerName(this._channelId);
-        var loadSmilesDefinition = this._getSmilesDefinitionUrl(this._channelId).then(function(smilesDefinitionUrl){
-            return this._loadSmilesDefinition(this._CHAT_URL + smilesDefinitionUrl);
-        }.bind(this), function () {
-            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить адрес списка смайлов.");
-        }.bind(this));
-        return this._promise.all([getStreamerName, loadSmilesDefinition]);
-    }.bind(this), function () {
-        this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
-    }.bind(this)).done(function (values) {
-        this._streamerName = values[0];
-        this._smileDefinition = values[1];
-        this._buildSmilesReplacement(this._smileDefinition);
-        this._startChat();
-    }.bind(this), function (param) {
-        this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить список поддерживаемых смайлов.");
-    }.bind(this));
+    this._findChannelId(this._CHANNEL_URL + channel)
+        .then(function (channelId) {
+                this._channelId = channelId;
+                this._tryGetStreamerNameWithInterval();
+                return this._getSmilesDefinitionUrl(this._channelId);
+            }.bind(this), function () {
+                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
+            }.bind(this))
+        .then(function(smilesDefinitionUrl){
+                return this._loadSmilesDefinition(this._CHAT_URL + smilesDefinitionUrl);
+            }.bind(this), function () {
+                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить адрес списка смайлов.");
+            }.bind(this))
+        .done(function (smileDefinition) {
+                this._smileDefinition = smileDefinition;
+                this._buildSmilesReplacement(this._smileDefinition);
+                this._startChat();
+            }.bind(this), function (param) {
+                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить список поддерживаемых смайлов.");
+            }.bind(this)
+        );
 };
 
 sc2tv.prototype.onMessage = null;
@@ -81,6 +83,19 @@ sc2tv.prototype._findChannelId = function (url) {
     }.bind(this));
 };
 
+sc2tv.prototype._tryGetStreamerNameWithInterval = function() {
+    this._getStreamerName(this._channelId)
+        .done(function (streamerName) {
+            this._streamerName = streamerName;
+        }.bind(this), function (){
+            if (this._isStopped) {
+                return;
+            }
+            setTimeout(this._tryGetStreamerNameWithInterval.bind(this), this._CHANNEL_RETRY_INTERVAL);
+        }.bind(this)
+    );
+};
+
 sc2tv.prototype._getStreamerName = function (channelId) {
     return new this._promise(function (fulfill, reject) {
         this._request(this._CHAT_URL + this._CHANNELS_INFO, function (error, response, body) {
@@ -88,7 +103,7 @@ sc2tv.prototype._getStreamerName = function (channelId) {
                 return;
             }
             if (error || response.statusCode !== 200) {
-                reject("streamer");
+                reject();
                 return;
             }
             var jsonObject = JSON.parse(body);
@@ -104,7 +119,7 @@ sc2tv.prototype._getStreamerName = function (channelId) {
                     return;
                 }
             }
-            fulfill(undefined);
+            reject();
         }.bind(this));
     }.bind(this));
 };
