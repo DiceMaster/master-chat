@@ -1,6 +1,12 @@
 # NW.js executable
 nwjs.app
 
+# NW.js runtime
+nwjs-*
+
+# Ranks.db database
+ranks*.db
+
 # Logs
 logs
 *.log

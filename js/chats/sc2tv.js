@@ -1,27 +1,27 @@
 var sc2tv = function(channel) {
     this._smileHtmlReplacement = [];
     this.channel = channel;
-    this._findChannelId(this._CHANNEL_URL + channel, function (channelId) {
-        if (channelId === undefined) {
-            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
-            return;
-        }
+    this._promise = require("promise");
+    this._request = require('request');
+
+    this._findChannelId(this._CHANNEL_URL + channel).then(function (channelId) {
         this._channelId = channelId;
-        this._findSmilesDefinitionUrl(this._CHAT_URL + "index.htm?channelId=" + this._channelId, function (smileDefinitionUrl){
-            if (smileDefinitionUrl === undefined) {
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить адрес списка смайлов.");
-                return;
-            }
-            this._loadSmilesDefinition(this._CHAT_URL + smileDefinitionUrl, function (smileDefinition) {
-                if (smileDefinition === undefined) {
-                    this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить список поддерживаемых смайлов.");
-                    return;
-                }
-                this._smileDefinition = smileDefinition;
-                this._buildSmilesReplacement(smileDefinition);
-                this._startChat();
-            }.bind(this));
+        var getStreamerName = this._getStreamerName(this._channelId);
+        var loadSmilesDefinition = this._getSmilesDefinitionUrl(this._channelId).then(function(smilesDefinitionUrl){
+            return this._loadSmilesDefinition(this._CHAT_URL + smilesDefinitionUrl);
+        }.bind(this), function () {
+            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить адрес списка смайлов.");
         }.bind(this));
+        return this._promise.all([getStreamerName, loadSmilesDefinition]);
+    }.bind(this), function () {
+        this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
+    }.bind(this)).done(function (values) {
+        this._streamerName = values[0];
+        this._smileDefinition = values[1];
+        this._buildSmilesReplacement(this._smileDefinition);
+        this._startChat();
+    }.bind(this), function (param) {
+        this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить список поддерживаемых смайлов.");
     }.bind(this));
 };
 
@@ -40,6 +40,7 @@ sc2tv.prototype.stopChat = function () {
 };
 
 sc2tv.prototype._CHAT_URL = "http://chat.sc2tv.ru/";
+sc2tv.prototype._CHANNELS_INFO = "memfs/channels.json";
 sc2tv.prototype._CHANNEL_URL = "http://sc2tv.ru/channel/";
 sc2tv.prototype._CHANNEL_RETRY_INTERVAL = 10000;
 sc2tv.prototype._CHAT_RELOAD_INTERVAL = 5000;
@@ -47,6 +48,9 @@ sc2tv.prototype._CHAT_RELOAD_INTERVAL = 5000;
 sc2tv.prototype._channelId = null;
 sc2tv.prototype._chatTimerId = null;
 sc2tv.prototype._isStopped = false;
+sc2tv.prototype._promise = null;
+sc2tv.prototype._request = null;
+sc2tv.prototype._streamerName = null;
 
 sc2tv.prototype._fireErrorMessage = function (messageText) {
     var errorMessage = new Message();
@@ -57,78 +61,92 @@ sc2tv.prototype._fireErrorMessage = function (messageText) {
     }
 };
 
-sc2tv.prototype._findChannelId = function (url, onFound) {
-    $.get(url).done( function ( data ) {
-        if (this._isStopped) {
-            return;
-        }
-        var channelIdMatch = data.match(/channelId=([0-9]*)&/);
-        if (channelIdMatch === null) {
-            if (typeof(onFound) === "function") {
-                onFound(undefined);
+sc2tv.prototype._findChannelId = function (url) {
+    return new this._promise(function (fulfill, reject){
+        this._request(url, function (error, response, body) {
+            if (this._isStopped) {
+                return;
             }
-            return;
-        }
-        if (typeof(onFound) === "function") {
-            onFound(channelIdMatch[1]);
-        }
-    }.bind(this)).fail( function () {
-        if (this._isStopped) {
-            return;
-        }
-        if (typeof(onFound) === "function") {
-            onFound(undefined);
-        }
+            if (error || response.statusCode !== 200) {
+                reject();
+                return;
+            }
+            var channelIdMatch = body.match(/channelId=([0-9]*)&/);
+            if (channelIdMatch === null) {
+                reject();
+                return;
+            }
+            fulfill(channelIdMatch[1]);
+        }.bind(this));
     }.bind(this));
 };
 
-sc2tv.prototype._findSmilesDefinitionUrl = function(url, onLoad) {
-    $.get(url).done( function ( data ) {
-        if (this._isStopped) {
-            return;
-        }
-        var smileDefinitionUrlMatch = data.match(/src="(js\/smiles\.js\?v=[0-9]*)">/i);
-        if (smileDefinitionUrlMatch === null) {
-            if (typeof(onLoad) === "function") {
-                onLoad(undefined);
+sc2tv.prototype._getStreamerName = function (channelId) {
+    return new this._promise(function (fulfill, reject) {
+        this._request(this._CHAT_URL + this._CHANNELS_INFO, function (error, response, body) {
+            if (this._isStopped) {
+                return;
             }
-            return;
-        }
-        if (typeof(onLoad) === "function") {
-            onLoad(smileDefinitionUrlMatch[1]);
-        }
-    }.bind(this)).fail( function () {
-        if (this._isStopped) {
-            return;
-        }
-        if (typeof(onLoad) === "function") {
-            onLoad(undefined);
-        }
+            if (error || response.statusCode !== 200) {
+                reject("streamer");
+                return;
+            }
+            var jsonObject = JSON.parse(body);
+            var channelList = jsonObject.channel;
+            var channelMaxNum =  - 1;
+            for (var iChannel = 0; iChannel < channelList.length; iChannel++) {
+                if (channelList[iChannel].channelId !== channelId) {
+                    continue;
+                }
+                var streamerName = channelList[i].streamerName;
+                if (streamerName != '') {
+                    fulfill(streamerName);
+                    return;
+                }
+            }
+            fulfill(undefined);
+        }.bind(this));
     }.bind(this));
 };
 
-sc2tv.prototype._loadSmilesDefinition = function(url, onLoad) {
-    $.get(url).done( function ( data ) {
-        if (this._isStopped) {
-            return;
-        }
-        var smileDefinitionMatch = data.match(/var smiles=(\[{[\s\S]*}]);/);
-        if (smileDefinitionMatch === null) {
-            if (typeof(onLoad) === "function") {
-                onLoad(undefined);
+sc2tv.prototype._getSmilesDefinitionUrl = function (channelId) {
+    var channelUrl = this._CHAT_URL + "index.htm?channelId=" + channelId;
+    return new this._promise(function (fulfill, reject) {
+        this._request(channelUrl, function (error, response, body) {
+            if (this._isStopped) {
+                return;
             }
-            return;
-        }
-        if (typeof(onLoad) === "function") {
-            onLoad(JSON.parse(smileDefinitionMatch[1]));
-        }
-    }.bind(this)).fail( function () {
-        if (this._isStopped) {
-            return;
-        }
-        if (typeof(onLoad) === "function") {
-            onLoad(undefined);
-        }
+            if (error || response.statusCode !== 200) {
+                reject();
+                return;
+            }
+            var smileDefinitionUrlMatch = body.match(/src="(js\/smiles\.js\?v=[0-9]*)">/i);
+            if (smileDefinitionUrlMatch === null) {
+                reject();
+                return;
+            }
+            fulfill(smileDefinitionUrlMatch[1]);
+        }.bind(this));
+    }.bind(this));
+};
+
+sc2tv.prototype._loadSmilesDefinition = function(url) {
+    return new this._promise(function (fulfill, reject) {
+        this._request(url, function (error, response, body) {
+            if (this._isStopped) {
+                return;
+            }
+            if (error || response.statusCode !== 200) {
+                reject();
+                return;
+            }
+            var smileDefinitionMatch = body.match(/var smiles=(\[{[\s\S]*}]);/);
+            if (smileDefinitionMatch === null) {
+                reject();
+                return;
+            }
+            fulfill(JSON.parse(smileDefinitionMatch[1]));
+        }.bind(this));
     }.bind(this));
 };
 
@@ -163,7 +181,8 @@ sc2tv.prototype._readChat = function () {
             chatMessage.nickname = jsonMessages[i].name;
             chatMessage.id = jsonMessages[i].id;
             chatMessage.time = new Date(jsonMessages[i].date);
-            chatMessage.isPersonal = jsonMessages[i].message.toLowerCase().indexOf("[b]" + this.channel.toLowerCase() + "[/b]") === 0;
+            var streamerName = this._streamerName || this.channel;
+            chatMessage.isPersonal = jsonMessages[i].message.toLowerCase().indexOf("[b]" + streamerName.toLowerCase() + "[/b]") === 0;
             if (typeof(this.onMessage) === "function") {
                 this.onMessage(this, chatMessage);
             }
