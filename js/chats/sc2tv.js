@@ -9,20 +9,19 @@ var sc2tv = function(channel) {
                 this._channelId = channelId;
                 this._tryGetStreamerNameWithInterval();
                 return this._getSmilesDefinitionUrl(this._channelId);
-            }.bind(this), function () {
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить числовой идентификатор канала.");
-            }.bind(this))
+            }.bind(this)
+        )
         .then(function(smilesDefinitionUrl){
                 return this._loadSmilesDefinition(this._CHAT_URL + smilesDefinitionUrl);
-            }.bind(this), function () {
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить адрес списка смайлов.");
-            }.bind(this))
-        .done(function (smileDefinition) {
+            }.bind(this)
+        )
+        .then(function (smileDefinition) {
                 this._smileDefinition = smileDefinition;
                 this._buildSmilesReplacement(this._smileDefinition);
                 this._startChat();
-            }.bind(this), function (param) {
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. Не удается получить список поддерживаемых смайлов.");
+            }.bind(this)
+        ).catch(function (err) {
+            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. " + err);
             }.bind(this)
         );
 };
@@ -70,12 +69,12 @@ sc2tv.prototype._findChannelId = function (url) {
                 return;
             }
             if (error || response.statusCode !== 200) {
-                reject();
+                reject("Не удается получить числовой идентификатор канала.");
                 return;
             }
             var channelIdMatch = body.match(/channelId=([0-9]*)&/);
             if (channelIdMatch === null) {
-                reject();
+                reject("Не удается получить числовой идентификатор канала.");
                 return;
             }
             fulfill(channelIdMatch[1]);
@@ -106,15 +105,24 @@ sc2tv.prototype._getStreamerName = function (channelId) {
                 reject();
                 return;
             }
-            var jsonObject = JSON.parse(body);
+            /// TODO: Error check
+            var jsonObject;
+            try {
+                jsonObject = JSON.parse(body);
+            } catch (e) {
+                reject();
+            }
             var channelList = jsonObject.channel;
+            if (channelList === undefined) {
+                reject;
+            }
             var channelMaxNum =  - 1;
             for (var iChannel = 0; iChannel < channelList.length; iChannel++) {
                 if (channelList[iChannel].channelId !== channelId) {
                     continue;
                 }
-                var streamerName = channelList[i].streamerName;
-                if (streamerName != '') {
+                var streamerName = channelList[iChannel].streamerName;
+                if (typeof streamerName === "string" && streamerName !== '') {
                     fulfill(streamerName);
                     return;
                 }
@@ -132,12 +140,12 @@ sc2tv.prototype._getSmilesDefinitionUrl = function (channelId) {
                 return;
             }
             if (error || response.statusCode !== 200) {
-                reject();
+                reject("Не удается получить адрес списка смайлов.");
                 return;
             }
             var smileDefinitionUrlMatch = body.match(/src="(js\/smiles\.js\?v=[0-9]*)">/i);
             if (smileDefinitionUrlMatch === null) {
-                reject();
+                reject("Не удается получить адрес списка смайлов.");
                 return;
             }
             fulfill(smileDefinitionUrlMatch[1]);
@@ -152,12 +160,12 @@ sc2tv.prototype._loadSmilesDefinition = function(url) {
                 return;
             }
             if (error || response.statusCode !== 200) {
-                reject();
+                reject("Не удается получить список поддерживаемых смайлов.");
                 return;
             }
             var smileDefinitionMatch = body.match(/var smiles=(\[{[\s\S]*}]);/);
             if (smileDefinitionMatch === null) {
-                reject();
+                reject("Не удается получить список поддерживаемых смайлов.");
                 return;
             }
             fulfill(JSON.parse(smileDefinitionMatch[1]));

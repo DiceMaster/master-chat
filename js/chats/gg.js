@@ -1,27 +1,27 @@
 var gg = function(channel) {
     this.channel = channel;
-    this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel), function (channelId) {
-        if (channelId === undefined) {
-            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. Не удалось получить идентификатор чата.");
-            return;
-        }
-        this._channelId = channelId;
-        this._findSmileStylesAndDefinitionsURL(this._CHANNEL_URL + channel, function(smileDefinitionUrl, globalSmilesCssUrl, channelsSmilesCssUrl) {
-            if (smileDefinitionUrl === undefined ||
-                globalSmilesCssUrl === undefined ||
-                channelsSmilesCssUrl === undefined) {
-
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. Не удалось получить адрес списка или стилей смайлов.");
-                return;
-            }
-            this._loadSmileStylesAndDefinitions(smileDefinitionUrl, globalSmilesCssUrl, channelsSmilesCssUrl, function (ggSmiles, combinedCss) {
-                this._allSmiles = this._buildAllSmiles(ggSmiles);
-                this._applyStyle(combinedCss);
+    this._request = require("request");
+    this._promise = require("promise");
+    this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel))
+        .then(function(channelId){
+                this._channelId = channelId;
+                return this._findSmileStylesAndDefinitionsURL(this._CHANNEL_URL + channel);
+            }.bind(this))
+        .then(function(urls){
+                return this._promise.all([
+                    this._getSmileDefinition(urls.smileDefinitionUrl),
+                    this._getCss(urls.globalSmilesCssUrl),
+                    this._getCss(urls.channelsSmilesCssUrl)
+                ]);
+            }.bind(this))
+        .then(function(values){
+                this._allSmiles = this._buildAllSmiles(values[0]);
+                this._applyStyle(values[1] + "\n" + values[2]);
                 this._connect();
+            }.bind(this))
+        .catch(function (err) {
+                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. " + err);
             }.bind(this));
-        }.bind(this));
-    }.bind(this));
-
 };
 
 gg.prototype.onMessage = null;
@@ -48,7 +48,6 @@ gg.prototype.stopChat = function () {
         this._socket.close();
         this._socket = null;
     }
-    clearInterval(this._channelTimerId);
 };
 
 gg.prototype._CHAT_URL = "ws://goodgame.ru:8080/";
@@ -60,6 +59,8 @@ gg.prototype._socket = null;
 gg.prototype._channelId = null;
 gg.prototype._isStopped = false;
 gg.prototype._allSmiles = null;
+gg.prototype._request = null;
+gg.prototype._promise = null;
 
 gg.prototype._fireErrorMessage = function (messageText) {
     var errorMessage = new Message();
@@ -90,68 +91,90 @@ gg.prototype._applyStyle = function(style) {
     gg._styleElement.innerHTML = style;
 };
 
-gg.prototype._findChannelId = function (url, onFound) {
-    $.getJSON(url).done( function ( data ) {
-        if (this._isStopped) {
-            return;
-        }
-        var id;
-        for (var prop in data) {
-            if (data.hasOwnProperty(prop)) {
-                id = prop;
-                break;
+gg.prototype._findChannelId = function (url) {
+    return new this._promise(function(fulfill, reject) {
+        this._request(url, function (error, response, body) {
+            if (this._isStopped) {
+                return;
             }
-        }
-        clearInterval(this._channelTimerId);
-        if (typeof(onFound) === "function") {
-            onFound(id);
-        }
-    }.bind(this)).fail( function () {
-        if (this._isStopped) {
-            return;
-        }
-        if (typeof(onFound) === "function") {
-            onFound(undefined);
-        }
+            if (error || response.statusCode !== 200) {
+                return reject("Не удалось получить идентификатор чата");
+            }
+            var jsonData = JSON.parse(body);
+            var id;
+            for (var prop in jsonData) {
+                if (jsonData.hasOwnProperty(prop)) {
+                    id = prop;
+                    break;
+                }
+            }
+            fulfill(id);
+        }.bind(this));
     }.bind(this));
 };
 
-gg.prototype._findSmileStylesAndDefinitionsURL = function (url, onFound) {
-    $.ajax(url).done( function ( data ) {
-        if (this._isStopped) {
-            return;
-        }
-        var smileDefinitionUrlMatch = data.match(/src="(http:\/\/goodgame\.ru\/js\/minified\/global\.js\?[a-z0-9]*)"/i);
-        if (smileDefinitionUrlMatch === null) {
-            if (typeof(onLoad) === "function") {
-                onLoad(undefined, undefined, undefined);
+gg.prototype._findSmileStylesAndDefinitionsURL = function (url) {
+    return new this._promise(function(fulfill, reject) {
+        $.get(url).done(function (data) {
+            if (this._isStopped) {
+                return;
             }
-            return;
-        }
-        var globalSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/common_smiles\.css\?[a-z0-9]*)"/i);
-        if (globalSmilesCssUrlMatch === null) {
-            if (typeof(onLoad) === "function") {
-                onLoad(undefined, undefined, undefined);
+            var smileDefinitionUrlMatch = data.match(/src="(http:\/\/goodgame\.ru\/js\/minified\/global\.js\?[a-z0-9]*)"/i);
+            if (smileDefinitionUrlMatch === null) {
+                return reject("Не удалось получить адрес списка смайлов.");
             }
-            return;
-        }
-        var channelsSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/channels_smiles\.css\?[a-z0-9]*)"/i);
-        if (channelsSmilesCssUrlMatch === null) {
-            if (typeof(onLoad) === "function") {
-                onLoad(undefined, undefined, undefined);
+            var globalSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/common_smiles\.css\?[a-z0-9]*)"/i);
+            if (globalSmilesCssUrlMatch === null) {
+                return reject("Не удалось получить адрес стилей общих смайлов.");
             }
-            return;
-        }
-        if (typeof(onFound) === "function") {
-            onFound(smileDefinitionUrlMatch[1], globalSmilesCssUrlMatch[1], channelsSmilesCssUrlMatch[1]);
-        }
-    }.bind(this)).fail( function () {
-        if (this._isStopped) {
-            return;
-        }
-        if (typeof(onLoad) === "function") {
-            onLoad(undefined, undefined, undefined);
-        }
+            var channelsSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/channels_smiles\.css\?[a-z0-9]*)"/i);
+            if (channelsSmilesCssUrlMatch === null) {
+                return reject("Не удалось получить адрес стилей смайлов каналов.");
+            }
+            fulfill({
+                "smileDefinitionUrl": smileDefinitionUrlMatch[1],
+                "globalSmilesCssUrl": globalSmilesCssUrlMatch[1],
+                "channelsSmilesCssUrl": channelsSmilesCssUrlMatch[1]
+            });
+        }.bind(this)).fail(function() {
+            if (this._isStopped) {
+                return;
+            }
+            return reject("Не удалось получить адрес стилей и списка смайлов.");
+        }.bind(this));
+    }.bind(this));
+};
+
+gg.prototype._getSmileDefinition = function (url) {
+    return new this._promise(function(fulfill, reject) {
+        this._request(url, function (error, response, body) {
+            if (this._isStopped) {
+                return;
+            }
+            if (error || response.statusCode !== 200) {
+                return reject ("Не удалось получить список смайлов.");
+            }
+            var smileDefinitionMatch = body.match(/var\s+Global\s*=\s*(\{[\s\S]+});/);
+            if (smileDefinitionMatch === null) {
+                return reject("Не удалось получить список смайлов.");
+            }
+            var ggSmiles = eval("(" + smileDefinitionMatch[1] + ")");
+            fulfill(ggSmiles);
+        }.bind(this));
+    }.bind(this));
+};
+
+gg.prototype._getCss = function (url) {
+    return new this._promise(function(fulfill, reject) {
+        this._request(url, function (error, response, body) {
+            if (this._isStopped) {
+                return;
+            }
+            if (error || response.statusCode !== 200) {
+                return reject("Не удалось получить стили смайлов.");
+            }
+            fulfill(body);
+        }.bind(this));
     }.bind(this));
 };
 
