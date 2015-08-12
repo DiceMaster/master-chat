@@ -35,6 +35,13 @@ sc2tv.prototype.displayName = "Sc2tv.ru";
 sc2tv.prototype.channel = null;
 
 sc2tv.prototype.chatImage = "sc2tv_logo.png";
+sc2tv.prototype.specialRanks = {
+    "sc2tv_prime": {
+        "exp": -1,
+        "icon": "img/sc2tv_prime.png",
+        "title": "PrimeTime"
+    }
+};
 
 sc2tv.prototype.stopChat = function () {
     this._stopChat();
@@ -111,10 +118,12 @@ sc2tv.prototype._getStreamerName = function (channelId) {
                 jsonObject = JSON.parse(body);
             } catch (e) {
                 reject();
+                return;
             }
             var channelList = jsonObject.channel;
             if (channelList === undefined) {
-                reject;
+                reject();
+                return;
             }
             var channelMaxNum =  - 1;
             for (var iChannel = 0; iChannel < channelList.length; iChannel++) {
@@ -205,7 +214,12 @@ sc2tv.prototype._readChat = function () {
             chatMessage.id = jsonMessages[i].id;
             chatMessage.time = new Date(jsonMessages[i].date);
             var streamerName = this._streamerName || this.channel;
-            chatMessage.isPersonal = jsonMessages[i].message.toLowerCase().indexOf("[b]" + streamerName.toLowerCase() + "[/b]") === 0;
+            var isPrime = jsonMessages[i].uid == -2;
+            if (isPrime) {
+                chatMessage.rankId = "sc2tv_prime";
+            }
+            var startsWithStreamerName = jsonMessages[i].message.toLowerCase().indexOf("[b]" + streamerName.toLowerCase() + "[/b]") === 0;
+            chatMessage.isPersonal = isPrime || startsWithStreamerName;
             if (typeof(this.onMessage) === "function") {
                 this.onMessage(this, chatMessage);
             }
