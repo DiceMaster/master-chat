@@ -219,6 +219,9 @@ gg.prototype._connect = function () {
     this._socket.onmessage = function(evt) {
         this._processWebSocketMessage(JSON.parse(evt.data));
     }.bind(this);
+    this._socket.onerror = function(err) {
+        console.log(err);
+    }.bind(this);
 };
 
 gg.prototype._processWebSocketMessage = function(message) {
