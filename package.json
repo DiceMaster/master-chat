@@ -5,7 +5,7 @@
   "window": {
     "title": "MasterChat",
     "toolbar": false,
-    "width": 360,
+    "width": 320,
     "height": 700,
     "always-on-top": true
   },
@@ -13,6 +13,7 @@
     "nedb": "^1.1.2",
     "irc": "~0.3.12",
     "promise": "^7.0.3",
-    "request": "^2.60.0"
+    "request": "^2.60.0",
+    "tmi.js": "git+https://github.com/Schmoopiie/tmi.js.git"
   }
 }
