@@ -18,8 +18,12 @@ ChatSource.prototype._initialize = function () {
         var chatDesc = channels[iChat];
         var chat = eval("new " + chatDesc.type + "('" + chatDesc.channelId + "')");
         chat.onMessage = this._onMessage.bind(this);
-        this._chats[chat.name] = chat;
+        this._chats[this._fullChannelId(chat.name, chatDesc.channelId)] = chat;
     }
+};
+
+ChatSource.prototype._fullChannelId = function (chatName, channelName) {
+    return chatName + "_" + channelName;
 };
 
 ChatSource.prototype._rankUp = function (user) {
@@ -75,6 +79,13 @@ ChatSource.prototype._processMessageQueue = function () {
         return;
     }
 
+    if (message.rankId !== undefined) {
+        this._addMessage(message, message.rankId);
+        this._messageQueue.shift();
+        this._processMessageQueue();
+        return;
+    }
+
     var lastMessageTime = this._configSource.getChannelLastMessageTime(message.chat, message.channel);
     if (message.time <= lastMessageTime) {
         this._rankController.getRankId(message.nickname, function (rankId) {
@@ -101,13 +112,26 @@ ChatSource.prototype._addMessage = function (message, rankId) {
     if (rankId === undefined) {
         rankId = this._configSource.getDefaultRankId();
     }
+    var chat = this._chats[this._fullChannelId(message.chat, message.channel)];
     var rank = this._rankController.getRankById(rankId);
+    if (rank === undefined) {
+        rank = this._getChannelSpecialRank(chat, rankId);
+    }
     message.rankIcon = rank.icon;
     message.rankTitle = rank.title;
-    message.chatLogo = this._chats[message.chat].chatImage;
+
+    message.chatLogo = chat.chatImage;
     this._messages.push(message);
 
     if (typeof(this.onmessage) === "function") {
         this.onmessage(message);
     }
-}
+};
+
+ChatSource.prototype._getChannelSpecialRank = function(chatChannel, rankId) {
+    var channelRanks = chatChannel.specialRanks;
+    if (channelRanks === undefined) {
+        return undefined;
+    }
+    return channelRanks[rankId];
+};
