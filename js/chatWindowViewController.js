@@ -32,7 +32,7 @@ ChatWindowViewController.prototype._applyThemeStyle = function (theme) {
 };
 
 ChatWindowViewController.prototype._onmessage = function(message) {
-    var isScrollAtBottom = this._view.scrollTop() + this._view.innerHeight() >= this._view.prop("scrollHeight");
+    var isScrollAtBottom = this._view.scrollTop() + this._view.innerHeight() >= this._view.prop("scrollHeight") - this._autoScrollThreshold;
 
     var messageHtml = this._theme.getMessageHtml(message);
     this._view.append($(messageHtml));
