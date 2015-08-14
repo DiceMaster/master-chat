@@ -21,7 +21,7 @@ var sc2tv = function(channel) {
                 this._startChat();
             }.bind(this)
         ).catch(function (err) {
-            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. " + err);
+                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на Sc2tv. " + err);
             }.bind(this)
         );
 };
