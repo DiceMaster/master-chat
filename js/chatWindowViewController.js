@@ -13,6 +13,7 @@ ChatWindowViewController.prototype._view = null;
 ChatWindowViewController.prototype._configSource = null;
 ChatWindowViewController.prototype._theme = null;
 ChatWindowViewController.prototype._styleElement = null;
+ChatWindowViewController.prototype._autoScrollThreshold  = 50;
 
 ChatWindowViewController.prototype._loadTheme = function (name) {
     return new Theme(name);
