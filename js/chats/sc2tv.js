@@ -79,7 +79,8 @@ sc2tv.prototype._findChannelId = function (url) {
                 reject("Не удается получить числовой идентификатор канала.");
                 return;
             }
-            var channelIdMatch = body.match(/channelId=([0-9]*)&/);
+            current_channel_id = 161434;
+            var channelIdMatch = body.match(/current_channel_id\s*=\s*([0-9]*);/);
             if (channelIdMatch === null) {
                 reject("Не удается получить числовой идентификатор канала.");
                 return;
