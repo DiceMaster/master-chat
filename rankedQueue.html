@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="css/rankedQueue.css">
+    <title>Очередь</title>
+</head>
+<body>
+<!--
+<div class="tabs">
+    <input type="radio" name="odin" checked="checked" id="tabQueue"/>
+    <label for="tabQueue">В очереди</label>
+    <input type="radio" name="odin" id="tabRemoved"/>
+    <label for="tabRemoved">Выбранные</label>
+    <div>
+-->
+        <div class="pop-queue-button" id="pop-queue-button">Достать из очереди</div>
+        <div class="queue-acquired-item" id="queue-acquired-item"></div>
+        <input class="queue-filter-input" id="queue-filter-input" type="text" placeholder="Поиск">
+        <div class="queue-list" id="queue-list"></div>
+
+        <script id="queue-item-template" type="text/x-handlebars-template">
+            <div>
+                <img width=20 height=20 class='queue-item-rank' title='{{rankTitle}}' src='{{rankIcon}}'>
+                <span class='queue-item-date'>{{date}}</span>
+                <span class='queue-item-nickname'>{{nickname}}</span>
+            </div>
+        </script>
+<!--
+    </div>
+    <div>
+        <ul class="removed-list"></ul>
+    </div>
+-->
+</div>
+
+</body>
+</html>

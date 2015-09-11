@@ -214,7 +214,7 @@ twitch.prototype._requestEmoticons = function() {
 };
 
 twitch.prototype._saveEmoticons = function() {
-    this._fs.writeFile(this._EMOTICON_FILE_PATH, JSON.stringify(this._emoticons), function () {
+    this._fs.writeFile(this._EMOTICON_FILE_PATH, JSON.stringify(this._emoticons, null, 2), function () {
 
     }.bind(this));
 };

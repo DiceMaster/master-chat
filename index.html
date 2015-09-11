@@ -8,6 +8,7 @@
     <script src="js/model/channel.js"></script>
     <script src="js/model/message.js"></script>
     <script src="js/model/user.js"></script>
+    <script src="js/model/rankedQueueUser.js"></script>
     <script src="js/chats/sc2tv.js"></script>
     <script src="js/chats/gg.js"></script>
     <script src="js/chats/twitch.js"></script>
@@ -18,6 +19,8 @@
     <script src="js/vendor/handlebars.3.0.3.min.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/chatWindowViewController.js"></script>
+    <script src="js/rankedQueueService.js"></script>
+    <script src="js/rankQueueViewController.js"></script>
     <script>
         $(function () {
             var gui = require('nw.gui');
@@ -31,7 +34,20 @@
             var configSource = new ConfigSource("config.json", appLifeCycleService);
             var rankController = new RankController(configSource);
             var chatSource = new ChatSource(configSource, rankController);
+            var rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
             new ChatWindowViewController($("#message_list"), chatSource, configSource);
+
+            document.body.addEventListener('contextmenu', function(ev) {
+                ev.preventDefault();
+                var menu = new gui.Menu();
+                var queueItem = new gui.MenuItem({ label: 'Очередь' });
+                queueItem.click = function() {
+                    new RankedQueueViewController(rankedQueueService);
+                };
+                menu.append(queueItem);
+                menu.popup(ev.x, ev.y);
+                return false;
+            });
         });
     </script>
     <title>MasterChat</title>

@@ -1,5 +1,6 @@
 var RankController = function(configSource) {
     this._configSource = configSource;
+    this._rankUpHandlers = [];
     this._sortedRanks = this._sortedRanks(this._configSource.getRanks());
     var Datastore = require('nedb');
     this._db = new Datastore({
@@ -32,6 +33,12 @@ RankController.prototype.processMessage = function (message, options, callback) 
         var user = users[0];
         var rankChanged = this._updateRank(user);
         callback(rankChanged, user);
+        if (rankChanged) {
+            for (var iHandler = 0; iHandler < this._rankUpHandlers.length; ++iHandler) {
+                var handler = this._rankUpHandlers[iHandler];
+                handler(user);
+            }
+        }
     }.bind(this));
 };
 
@@ -53,9 +60,17 @@ RankController.prototype.getRankById = function(rankId) {
     return this._configSource.getRanks()[rankId];
 };
 
+RankController.prototype.onRankUp = function(handler) {
+    if (typeof handler !== "function") {
+        return;
+    }
+    this._rankUpHandlers.push(handler);
+};
+
 RankController.prototype._configSource = null;
 RankController.prototype._db = null;
 RankController.prototype._sortedRanks = null;
+RankController.prototype._rankUpHandlers = null;
 
 RankController.prototype._updateRank = function (user) {
     var newRankId = this._getNextRank(user.rankId, user.exp);
