@@ -93,7 +93,7 @@ twitch.prototype._connect = function () {
 
 twitch.prototype._processChatMessage = function(fromUser, message) {
     var chatMessage = new Message();
-    chatMessage.message = this._htmlify(message, fromUser.emotes);
+    chatMessage.message =  this._htmlifyEmoticons(this._escapeHtml(this._processEmoticons(message, fromUser.emotes)));
     chatMessage.nickname = fromUser["display-name"] || fromUser.username;
 //    chatMessage.id = message.message_id;
     chatMessage.time = new Date();
@@ -104,41 +104,60 @@ twitch.prototype._processChatMessage = function(fromUser, message) {
     }
 };
 
-twitch.prototype._htmlify = function(message, emotes) {
-    if (emotes) {
-        var placesToReplace = [];
-        for (var emoteId in emotes) {
-            for (var iRange = 0; iRange < emotes[emoteId].length; ++iRange) {
-                var range = emotes[emoteId][iRange];
-                var rangeParts = range.split('-');
-                placesToReplace.push({
-                    "emoteId": emoteId,
-                    "from": parseInt(rangeParts[0]),
-                    "to": parseInt(rangeParts[1]) + 1
-                });
-            }
+twitch.prototype._processEmoticons = function(message, emotes) {
+    if (!emotes) {
+        return message;
+    }
+    var placesToReplace = [];
+    for (var emoteId in emotes) {
+        for (var iRange = 0; iRange < emotes[emoteId].length; ++iRange) {
+            var range = emotes[emoteId][iRange];
+            var rangeParts = range.split('-');
+            placesToReplace.push({
+                "emoteId": emoteId,
+                "from": parseInt(rangeParts[0]),
+                "to": parseInt(rangeParts[1]) + 1
+            });
         }
-        placesToReplace.sort(function(first, second) {
-            return second.from - first.from;
-        });
-        for (var iPlace = 0; iPlace < placesToReplace.length; ++iPlace) {
-            var place = placesToReplace[iPlace];
-            var emoticonRegex = message.substring(place.from, place.to);
-            var emoticonSize = this._emoticons[emoticonRegex];
-            if (emoticonSize) {
-                message = message.substring(0, place.from) +
-                    "<img width='" + emoticonSize.width + "' height='" + emoticonSize.height + "' src='http://static-cdn.jtvnw.net/emoticons/v1/" + place.emoteId + "/1.0' title='" + emoticonRegex + "'>" +
-                    message.substring(place.to);
-            } else {
-                message = message.substring(0, place.from) +
-                    "<img src='http://static-cdn.jtvnw.net/emoticons/v1/" + place.emoteId + "/1.0' title='" + emoticonRegex + "'>" +
-                    message.substring(place.to);
-            }
+    }
+    placesToReplace.sort(function(first, second) {
+        return second.from - first.from;
+    });
+    for (var iPlace = 0; iPlace < placesToReplace.length; ++iPlace) {
+        var place = placesToReplace[iPlace];
+        var emoticonRegex = message.substring(place.from, place.to);
+        var emoticonSize = this._emoticons[emoticonRegex];
+        if (emoticonSize) {
+            message = message.substring(0, place.from) +
+                "$emoticon#w" + emoticonSize.width + "#h" + emoticonSize.height + "#" + place.emoteId + "#" + emoticonRegex + "$" +
+                message.substring(place.to);
+        } else {
+            message = message.substring(0, place.from) +
+                "$emoticon#" + place.emoteId + "#" + emoticonRegex + "$" +
+                message.substring(place.to);
         }
     }
 
     return message;
 };
+
+twitch.prototype._htmlifyEmoticons = function(message) {
+    return message.replace(/\$emoticon(#w\d+)?(#h\d+)?#(\d+)#([^\$]+)\$/g, function (code, width, height, emoteId, emoteRegex) {
+        if (width === undefined || height === undefined) {
+            return "<img src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
+        } else {
+            return "<img width='" + width.substr(2) + "' height='" + height.substr(2) + "' src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
+        }
+    });
+};
+
+twitch.prototype._escapeHtml = (function () {
+    'use strict';
+    var chr = { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+    return function (text) {
+        return text.replace(/[\"&<>]/g, function (a) { return chr[a]; });
+    };
+}());
 
 twitch.prototype._fireErrorMessage = function (messageText) {
     var errorMessage = new Message();
