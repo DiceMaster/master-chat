@@ -31,3 +31,9 @@ a:hover,
 a:active {
     color: #ffffff;
 }
+
+.regular_message,
+.system_message,
+.error_message {
+    word-wrap: break-word;
+}
