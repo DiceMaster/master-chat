@@ -1,27 +1,48 @@
-var gg = function(channel) {
+var gg = function(channel, username, password) {
     this.channel = channel;
+    this._username = username;
+    this._password = password;
     this._request = require("request");
     this._promise = require("promise");
-    this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel))
+
+    var resourcesPromise = this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel))
         .then(function(channelId){
-                this._channelId = channelId;
-                return this._findSmileStylesAndDefinitionsURL(this._CHANNEL_URL + channel);
-            }.bind(this))
+            this._channelId = channelId;
+            return this._findSmileStylesAndDefinitionsURL(this._CHANNEL_URL + channel);
+        }.bind(this))
         .then(function(urls){
-                return this._promise.all([
-                    this._getSmileDefinition(urls.smileDefinitionUrl),
-                    this._getCss(urls.globalSmilesCssUrl),
-                    this._getCss(urls.channelsSmilesCssUrl)
-                ]);
-            }.bind(this))
-        .then(function(values){
-                this._allSmiles = this._buildAllSmiles(values[0]);
-                this._applyStyle(values[1] + "\n" + values[2]);
-                this._connect();
-            }.bind(this))
-        .catch(function (err) {
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. " + err);
-            }.bind(this));
+            return this._promise.all([
+                this._getSmileDefinition(urls.smileDefinitionUrl),
+                this._getCss(urls.globalSmilesCssUrl),
+                this._getCss(urls.channelsSmilesCssUrl)
+            ]);
+        }.bind(this));
+
+    var credentialsProvided = typeof this._username == "string";
+    var finalPromise =  credentialsProvided ?
+        this._promise.all([
+            resourcesPromise,
+            this._login()
+        ]) :
+        resourcesPromise;
+
+    finalPromise.then(function (results) {
+            var resourceValues;
+            if (credentialsProvided) {
+                resourceValues = results[0];
+                this._userId = results[1].userId;
+                this._token = results[1].token;
+            } else {
+                resourceValues = results;
+            }
+            this._allSmiles = this._buildAllSmiles(resourceValues[0]);
+            this._applyStyle(resourceValues[1] + "\n" + resourceValues[2]);
+
+            this._connect();
+        }.bind(this)
+    ).catch(function (err) {
+            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. " + err);
+        }.bind(this));
 };
 
 gg.prototype.onMessage = null;
@@ -34,14 +55,6 @@ gg.prototype.channel = null;
 
 gg.prototype.chatImage = "gg_logo.png";
 
-gg.prototype.getStatusImage = function (status) {
-
-};
-
-gg.prototype.getSmileImage = function (status) {
-
-};
-
 gg.prototype.stopChat = function () {
     this._isStopped = true;
     if (this._socket != null) {
@@ -50,17 +63,67 @@ gg.prototype.stopChat = function () {
     }
 };
 
+gg.prototype.postMessage = function(message, to) {
+    if (this._isStopped) {
+        return;
+    }
+    if (!this._socket) {
+        return;
+    }
+    var chatMessage = {
+        "type": "send_message",
+        "data": {
+            "channel_id": this._channelId,
+            "text": (to + ", " || "") +  message, //html-разметка эскейпится
+            "hideIcon": false,
+            "mobile": false
+        }
+    };
+    this._socket.send(JSON.stringify(chatMessage));
+};
+
 gg.prototype._CHAT_URL = "ws://goodgame.ru:8080/";
+gg.prototype._LOGIN_URL = " http://goodgame.ru/ajax/chatlogin/";
 gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
 gg.prototype._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
 gg.prototype._RETRY_INTERVAL = 10000;
 
 gg.prototype._socket = null;
+gg.prototype._username = null;
+gg.prototype._password = null;
 gg.prototype._channelId = null;
 gg.prototype._isStopped = false;
 gg.prototype._allSmiles = null;
 gg.prototype._request = null;
 gg.prototype._promise = null;
+gg.prototype._token = null;
+gg.prototype._userId = null;
+
+gg.prototype._login = function() {
+    return new this._promise(function(fulfill, reject) {
+        this._request.post({
+                url: this._LOGIN_URL,
+                form: {login: this._username, password: this._password}
+            },
+            function (err, response, body) {
+                if (this._isStopped) {
+                    return;
+                }
+                if (err || response.statusCode !== 200) {
+                    return reject("Не удалось получить токен авторизации.");
+                }
+                var jsonData = JSON.parse(body);
+                if (!jsonData) {
+                    return reject("Не удалось обработать ответ на запрос токена автоизации (" + body + ").");
+                }
+                if (!jsonData.result) {
+                    return reject("Ошиба получения токена авторизации. " + jsonData.response);
+                }
+                fulfill({"userId": jsonData.user_id, "token": jsonData.token });
+            }.bind(this)
+        );
+    }.bind(this));
+};
 
 gg.prototype._fireErrorMessage = function (messageText) {
     var errorMessage = new Message();
@@ -186,7 +249,6 @@ gg.prototype._loadSmileStylesAndDefinitions = function (definitionUrl, globalCss
             if (this._isStopped) {
                 return;
             }
-            //var smileDefinitionMatch = smilesDefinition[0].match(/var\s+Global\s*=\s*(\{.+)/);
             var smileDefinitionMatch = smilesDefinition[0].match(/var\s+Global\s*=\s*(\{[\s\S]+});/);
             if (smileDefinitionMatch === null) {
                 if (typeof(onLoad) === "function") {
@@ -233,8 +295,9 @@ gg.prototype._processWebSocketMessage = function(message) {
             var authMessage = {
                 "type": "auth",
                 "data": {
-                    "user_id": 0,
-                    "token": ""
+                    "site_id": 1,
+                    "user_id": this._userId || 0,
+                    "token": this._token || ""
                 }
             };
             var messageString = JSON.stringify(authMessage);
@@ -253,7 +316,7 @@ gg.prototype._processWebSocketMessage = function(message) {
                 "data": {
                     "channel_id": this._channelId,
                     "hidden": false,
-                    "mobile": 0
+                    "mobile": false
                 }
             };
             this._socket.send(JSON.stringify(joinMessage));

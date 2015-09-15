@@ -5,7 +5,7 @@ var ChatWindowViewController = function(view, chatSource, configSource) {
     this._applyThemeStyle(this._theme);
 
     this._chatSource = chatSource;
-    this._chatSource.onmessage = this._onmessage.bind(this);
+    this._chatSource.addMessageListener(this._onmessage.bind(this));
 };
 
 ChatWindowViewController.prototype._chatSource = null;

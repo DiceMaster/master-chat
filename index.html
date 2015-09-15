@@ -21,6 +21,7 @@
     <script src="js/chatWindowViewController.js"></script>
     <script src="js/rankedQueueService.js"></script>
     <script src="js/rankQueueViewController.js"></script>
+    <script src="js/commandController.js"></script>
     <script>
         $(function () {
             var gui = require('nw.gui');
@@ -35,6 +36,7 @@
             var rankController = new RankController(configSource);
             var chatSource = new ChatSource(configSource, rankController);
             var rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
+            new CommandController(chatSource, rankController);
             new ChatWindowViewController($("#message_list"), chatSource, configSource);
 
             document.body.addEventListener('contextmenu', function(ev) {

@@ -42,14 +42,14 @@ RankController.prototype.processMessage = function (message, options, callback) 
     }.bind(this));
 };
 
-RankController.prototype.getRankId = function (username, callback) {
+RankController.prototype.getUserRankAndExp = function (username, callback) {
     this._db.find({ name: username }, function (err, users) {
         if (err) {
             callback(undefined);
             return;
         }
         if (users.length > 0) {
-            callback(users[0].rankId);
+            callback(users[0]);
             return;
         }
         callback(undefined);

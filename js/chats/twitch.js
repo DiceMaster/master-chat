@@ -1,5 +1,7 @@
-var twitch = function (channel) {
+var twitch = function (channel, username, password) {
     this.channel = channel;
+    this._username = username;
+    this._password = password;
 
     this._promise = require("promise");
     this._request = require("request");
@@ -58,10 +60,20 @@ twitch.prototype.channel = null;
 
 twitch.prototype.chatImage = "twitch_logo.png";
 
+twitch.prototype.postMessage = function(message, to) {
+    if (!this._client) {
+        return;
+    }
+    this._client.say(this.channel, (to ? "@"+to+", " : "") + message);
+};
+
 twitch.prototype._IRC_URL = "irc.twitch.tv";
 twitch.prototype._SMILES_URL = "https://api.twitch.tv/kraken/chat/emoticons";
 twitch.prototype._EMOTICON_FILE_PATH = "twitch/smiles.json";
 
+twitch.prototype._client = null;
+twitch.prototype._username = null;
+twitch.prototype._password = null;
 twitch.prototype._emoticons = null;
 twitch.prototype._promise = null;
 twitch.prototype._request = null;
@@ -77,25 +89,30 @@ twitch.prototype._connect = function () {
         },
         channels: ["#" + this.channel]
     };
+    if (typeof this._username == "string") {
+        options.identity = {
+            username: this._username,
+            password: this._password
+        };
+    }
 
-    var client = new irc.client(options);
-    client.on("connected", function (address, port) {
+    this._client = new irc.client(options);
+    this._client.on("connected", function (address, port) {
         console.log("Connected to " + address + ":" + port);
     }.bind(this));
 
-    client.on("chat", function (channel, user, message, self) {
+    this._client.on("chat", function (channel, user, message, self) {
         if (!self) {
             this._processChatMessage(user, message);
         }
     }.bind(this));
-    client.connect();
+    this._client.connect();
 };
 
 twitch.prototype._processChatMessage = function(fromUser, message) {
     var chatMessage = new Message();
     chatMessage.message =  this._htmlifyEmoticons(this._escapeHtml(this._processEmoticons(message, fromUser.emotes)));
     chatMessage.nickname = fromUser["display-name"] || fromUser.username;
-//    chatMessage.id = message.message_id;
     chatMessage.time = new Date();
     chatMessage.isPersonal = message.toLowerCase().indexOf(this.channel.toLowerCase()) === 0 ||
                              message.toLowerCase().indexOf("@" + this.channel.toLowerCase()) === 0;

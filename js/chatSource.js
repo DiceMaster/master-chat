@@ -4,11 +4,32 @@ var ChatSource = function(configSource, rankController) {
     this._messageQueue = [];
     this._configSource = configSource;
     this._rankController = rankController;
+    this._listeners = [];
     this._initialize();
 };
 
-ChatSource.prototype.onmessage = null;
+ChatSource.prototype.addMessageListener = function(listener) {
+    this._listeners.push(listener);
+};
 
+ChatSource.prototype.removeMessageListener = function(listener) {
+    var index = this._listeners.indexOf(listener);
+    if (index < 0) {
+        return;
+    }
+    this._listeners.splice(index, 1);
+};
+
+ChatSource.prototype.postMessage = function(message, to, chat, channel) {
+    var chat = this._chats[this._fullChannelId(chat, channel)];
+    if (typeof chat.postMessage === "function") {
+        chat.postMessage(message, to);
+    } else {
+        // TODO: Show message in chat window it is not possible to post in original chat
+    }
+};
+
+ChatSource.prototype._listeners = null;
 ChatSource.prototype._configSource = null;
 ChatSource.prototype._rankController = null;
 
@@ -16,9 +37,19 @@ ChatSource.prototype._initialize = function () {
     var channels = this._configSource.getChannels();
     for (var iChat = 0; iChat < channels.length; ++iChat) {
         var chatDesc = channels[iChat];
-        var chat = eval("new " + chatDesc.type + "('" + chatDesc.channelId + "')");
+        var parameters = "'" + chatDesc.channelId + "'";
+        if (typeof chatDesc.username === "string") {
+            parameters += ", '" + chatDesc.username + "', '" + chatDesc.password + "'";
+        }
+        var chat = eval("new " + chatDesc.type + "(" + parameters + ")");
         chat.onMessage = this._onMessage.bind(this);
         this._chats[this._fullChannelId(chat.name, chatDesc.channelId)] = chat;
+    }
+};
+
+ChatSource.prototype._notifyListeners = function (message) {
+    for (var iListener = 0; iListener < this._listeners.length; ++iListener) {
+        this._listeners[iListener](message);
     }
 };
 
@@ -31,9 +62,7 @@ ChatSource.prototype._rankUp = function (user) {
     systemMessage.isSystem = true;
     var newRank = this._rankController.getRankById(user.rankId);
     systemMessage.message = "Пользователь " + user.name + " получил звание " + newRank.title;
-    if (typeof(this.onmessage) === "function") {
-        this.onmessage(systemMessage);
-    }
+    this._notifyListeners(systemMessage);
 };
 
 ChatSource.prototype._isMessageOutdated = function (message) {
@@ -88,8 +117,8 @@ ChatSource.prototype._processMessageQueue = function () {
 
     var lastMessageTime = this._configSource.getChannelLastMessageTime(message.chat, message.channel);
     if (message.time <= lastMessageTime) {
-        this._rankController.getRankId(message.nickname, function (rankId) {
-            this._addMessage(message, rankId);
+        this._rankController.getUserRankAndExp(message.nickname, function (user) {
+            this._addMessage(message, user.rankId);
             this._messageQueue.shift();
             this._processMessageQueue();
         }.bind(this));
@@ -123,9 +152,7 @@ ChatSource.prototype._addMessage = function (message, rankId) {
     message.chatLogo = chat.chatImage;
     this._messages.push(message);
 
-    if (typeof(this.onmessage) === "function") {
-        this.onmessage(message);
-    }
+    this._notifyListeners(message);
 };
 
 ChatSource.prototype._getChannelSpecialRank = function(chatChannel, rankId) {
