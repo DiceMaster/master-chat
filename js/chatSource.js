@@ -116,25 +116,24 @@ ChatSource.prototype._processMessageQueue = function () {
     }
 
     var lastMessageTime = this._configSource.getChannelLastMessageTime(message.chat, message.channel);
-    if (message.time <= lastMessageTime) {
+    message.isFresh = message.time > lastMessageTime;
+    if (message.isFresh) {
+        this._configSource.setChannelLastMessageTime(message.chat, message.channel, message.time);
+        this._rankController.processMessage(message, {}, function (isRankUp, user) {
+            if (isRankUp) {
+                this._rankUp(user);
+            }
+            this._addMessage(message, user.rankId);
+            this._messageQueue.shift();
+            this._processMessageQueue();
+        }.bind(this));
+    } else {
         this._rankController.getUserRankAndExp(message.nickname, function (user) {
             this._addMessage(message, user.rankId);
             this._messageQueue.shift();
             this._processMessageQueue();
         }.bind(this));
-        return;
-    } else {
-        this._configSource.setChannelLastMessageTime(message.chat, message.channel, message.time);
     }
-
-    this._rankController.processMessage(message, {}, function (isRankUp, user) {
-        if (isRankUp) {
-            this._rankUp(user);
-        }
-        this._addMessage(message, user.rankId);
-        this._messageQueue.shift();
-        this._processMessageQueue();
-    }.bind(this));
 };
 
 ChatSource.prototype._addMessage = function (message, rankId) {

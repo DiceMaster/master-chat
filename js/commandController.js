@@ -5,6 +5,9 @@ var CommandController = function(chatSource, rankController) {
 };
 
 CommandController.prototype._onMessage = function(message){
+    if (!message.isFresh) {
+        return;
+    }
     if (message.message.indexOf("!") !== 0) {
         return;
     }
