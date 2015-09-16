@@ -52,8 +52,12 @@ RankController.prototype.getUserRankAndExp = function (username, callback) {
             callback(users[0]);
             return;
         }
-        callback(undefined);
-    });
+        var user = new User();
+        user.name = username;
+        user.exp = 0;
+        user.rankId = this._configSource.getDefaultRankId();
+        callback(user);
+    }.bind(this));
 };
 
 RankController.prototype.getRankById = function(rankId) {

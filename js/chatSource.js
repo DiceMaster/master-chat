@@ -129,7 +129,8 @@ ChatSource.prototype._processMessageQueue = function () {
         }.bind(this));
     } else {
         this._rankController.getUserRankAndExp(message.nickname, function (user) {
-            this._addMessage(message, user.rankId);
+            var rankId = user && user.rankId ? user.rankId : this._configSource.getDefaultRankId();
+            this._addMessage(message, rankId);
             this._messageQueue.shift();
             this._processMessageQueue();
         }.bind(this));
