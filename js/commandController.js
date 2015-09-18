@@ -20,14 +20,15 @@ CommandController.prototype._onMessage = function(message){
 CommandController.prototype._tellUserRank = function(user, chat, channel) {
     this._rankController.getUserRankAndExp(user, function (userInfo) {
         var rank = this._rankController.getRankById(userInfo.rankId);
-        var nextRankExp = this._rankController.getRankById(this._rankController.getNextRank(userInfo.rankId)).exp;
+        var nextRankId = this._rankController.getNextRank(userInfo.rankId);
+        var nextRankExp = this._rankController.getRankById(nextRankId).exp;
         var exp = Math.floor(userInfo.exp / 10);
         var message = "Ранг " + rank.title + ", всего опыта: " + exp;
-        if (rank.exp > 0) {
-            if (rank.exp - nextRankExp > 0) {
+        if (rank.exp >= 0) {
+            if (nextRankId === userInfo.rankId) {
                 message += ". Достигнут максимальный уровень";
             } else {
-                var nextExp = Math.floor((nextRankExp - rank.exp) / 10);
+                var nextExp = Math.ceil((nextRankExp - userInfo.exp) / 10);
                 message += ". До следующего уровеня " + nextExp + " опыта.";
             }
         }
