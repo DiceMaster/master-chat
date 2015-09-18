@@ -219,13 +219,22 @@ funstream.prototype._bbCodeURLToHtml = function (str, proto, url, host, port, pa
     }
 };
 
+funstream.prototype._escapeHtml = (function () {
+    'use strict';
+    var chr = { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+    return function (text) {
+        return text.replace(/[\"&<>]/g, function (a) { return chr[a]; });
+    };
+}());
+
 funstream.prototype._htmlify = function (message) {
+    message = this._escapeHtml(message);
     message = this._bbCodeToHtml(message);
     for (var iSmile = 0; iSmile < this._smiles.length; ++iSmile) {
         var smile = this._smiles[iSmile];
         message = message.replace(
             ":" + smile.code + ":",
-            '<img src="' + this._SMILE_URL + smile.image + '" width="' + smile.width + '" height="' + smile.height + '"/>');
+            '<img src="' + this._SMILE_URL + smile.image + '" width="' + smile.width + '" height="' + smile.height + '" title="' + smile.code + '"/>');
     }
     return message;
 };
