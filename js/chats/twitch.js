@@ -102,9 +102,7 @@ twitch.prototype._connect = function () {
     }.bind(this));
 
     this._client.on("chat", function (channel, user, message, self) {
-        if (!self) {
-            this._processChatMessage(user, message);
-        }
+        this._processChatMessage(user, message);
     }.bind(this));
     this._client.connect();
 };
