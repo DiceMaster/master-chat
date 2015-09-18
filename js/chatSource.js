@@ -39,7 +39,10 @@ ChatSource.prototype._initialize = function () {
         var chatDesc = channels[iChat];
         var parameters = "'" + chatDesc.channelId + "'";
         if (typeof chatDesc.username === "string") {
-            parameters += ", '" + chatDesc.username + "', '" + chatDesc.password + "'";
+            parameters += ", '" + chatDesc.username + "'";
+        }
+        if (typeof chatDesc.password === "string") {
+            parameters += ", '" + chatDesc.password + "'";
         }
         var chat = eval("new " + chatDesc.type + "(" + parameters + ")");
         chat.onMessage = this._onMessage.bind(this);
