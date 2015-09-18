@@ -6,6 +6,10 @@ var funstream = function(channel, username, password) {
     this._promise = require("promise");
     this._smiles = [];
 
+    if (this._username && !this._password) {
+        this.oAuth();
+    }
+
     this._promise.all([this._findChannelId(), this._getSmiles()])
         .then(function (results) {
                 this._channelId = results[0];
@@ -31,8 +35,42 @@ funstream.prototype.stopChat = function () {
     this._stopChat();
 };
 
+funstream.prototype.oAuth = function () {
+    this._request({
+            method: "POST",
+            url: this._API_URL + "/api/oauth/request",
+            json: true,
+            body: {"text": "MasterChat"}
+        },
+        function (err, response, body) {
+            if (err || response.statusCode !== 200) {
+                console.log("Не удалось получить код для oAuth.");
+            }
+            var gui = require('nw.gui');
+            var oAuthWindow = gui.Window.open(this._OAUTH_URL + body.code);
+            oAuthWindow.on('close', function () {
+                this._request({
+                        method: "POST",
+                        url: this._API_URL + "/api/oauth/exchange",
+                        json: true,
+                        body: {"code": body.code}
+                    },
+                    function (err, response, body) {
+                        if (err || response.statusCode !== 200) {
+                            console.log("Не удалось получить токен после oAuth авторизации.");
+                        }
+                        alert(body.token);
+                        console.log("Токен авторизации: " + body.token);
+                    }.bind(this));
+                }.bind(this)
+            );
+        }.bind(this)
+    );
+};
+
 funstream.prototype._API_URL = "http://funstream.tv";
 funstream.prototype._CHAT_URL = "http://funstream.tv:3811";
+funstream.prototype._OAUTH_URL = "http://funstream.tv/oauth/";
 funstream.prototype._SMILE_URL = "http://funstream.tv/build/images/smiles/";
 funstream.prototype._CHANNEL_RETRY_INTERVAL = 10000;
 funstream.prototype._CHAT_RELOAD_INTERVAL = 5000;
@@ -118,6 +156,11 @@ funstream.prototype._connect = function() {
     this._socket = io.connect('http://funstream.tv:3811', {transports: ['websocket']});
 
     this._socket.on('connect', function (data) {
+        if (this._username && this._password) {
+            this._socket.emit('/chat/login', { token: this._password}, function (data) {
+                console.log("" + JSON.stringify(data));
+            });
+        }
         this._socket.emit('/chat/join', {channel: "stream/" + this._channelId}, function (data) {
             this._socket.emit('/chat/history',
                 {"channel":"stream/"+this._channelId, "amount":20,"query":{"conditions":[],"groups":[],"glue":"and"}},
