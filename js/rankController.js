@@ -64,6 +64,22 @@ RankController.prototype.getRankById = function(rankId) {
     return this._configSource.getRanks()[rankId];
 };
 
+RankController.prototype.getNextRank = function (rankId) {
+    if (rankId === undefined) {
+        rankId = this._configSource.getDefaultRankId();
+    }
+    if (this._configSource.getRanks()[rankId].exp < 0) {
+        return rankId;
+    }
+    var exp = this._configSource.getRanks()[rankId].exp;
+    for (var iRank = 0; iRank < this._sortedRanks.length; ++iRank) {
+        if (this._sortedRanks[iRank].exp > exp) {
+            return this._sortedRanks[iRank].id;
+        }
+    }
+    return rankId;
+};
+
 RankController.prototype.onRankUp = function(handler) {
     if (typeof handler !== "function") {
         return;
