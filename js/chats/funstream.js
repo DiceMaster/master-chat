@@ -5,15 +5,21 @@ var funstream = function(channel, username, password) {
     this._request = require("request");
     this._promise = require("promise");
     this._smiles = [];
+    this._usersIdentifiers = {};
+    this._receivedMessageIds = new Set();
 
-    if (this._username && !this._password) {
-        this.oAuth();
+    var promises = [this._findChannelId(), this._getSmiles()];
+    if (this._username && this._password) {
+        promises.push(this._login());
     }
-
-    this._promise.all([this._findChannelId(), this._getSmiles()])
+    this._promise.all(promises)
         .then(function (results) {
                 this._channelId = results[0];
                 this._smiles = this._flattenSmiles(results[1]);
+                if (this._username && this._password) {
+                    this._token = results[2].token;
+                    this._userId = results[2].userId;
+                }
                 this._connect();
             }.bind(this))
         .catch(function (err) {
@@ -35,37 +41,22 @@ funstream.prototype.stopChat = function () {
     this._stopChat();
 };
 
-funstream.prototype.oAuth = function () {
-    this._request({
-            method: "POST",
-            url: this._API_URL + "/api/oauth/request",
-            json: true,
-            body: {"text": "MasterChat"}
-        },
-        function (err, response, body) {
-            if (err || response.statusCode !== 200) {
-                console.log("Не удалось получить код для oAuth.");
-            }
-            var gui = require('nw.gui');
-            var oAuthWindow = gui.Window.open(this._OAUTH_URL + body.code);
-            oAuthWindow.on('close', function () {
-                this._request({
-                        method: "POST",
-                        url: this._API_URL + "/api/oauth/exchange",
-                        json: true,
-                        body: {"code": body.code}
-                    },
-                    function (err, response, body) {
-                        if (err || response.statusCode !== 200) {
-                            console.log("Не удалось получить токен после oAuth авторизации.");
-                        }
-                        alert(body.token);
-                        console.log("Токен авторизации: " + body.token);
-                    }.bind(this));
-                }.bind(this)
-            );
-        }.bind(this)
-    );
+funstream.prototype.postMessage = function(message, to) {
+    if (!this._socket || !this._token) {
+        return;
+    }
+    this._socket.emit('/chat/publish', {
+            "channel": "stream/" + this._channelId,
+            "from": {
+                "id": this._userId,
+                "name": this._username
+            },
+            "to": to ? {
+                "id": this._usersIdentifiers[to],
+                "name": to
+            } : null,
+            "text": message
+    });
 };
 
 funstream.prototype._API_URL = "http://funstream.tv";
@@ -80,10 +71,14 @@ funstream.prototype._channelId = null;
 funstream.prototype._socket = null;
 funstream.prototype._username = null;
 funstream.prototype._password = null;
+funstream.prototype._token = null;
+funstream.prototype._userId = null;
 funstream.prototype._channelId = null;
 funstream.prototype._request = null;
 funstream.prototype._promise = null;
 funstream.prototype._smiles = null;
+funstream.prototype._usersIdentifiers = null;
+funstream.prototype._receivedMessageIds = null;
 
 funstream.prototype._fireErrorMessage = function (messageText) {
     var errorMessage = new Message();
@@ -99,6 +94,30 @@ funstream.prototype._stopChat = function () {
     clearInterval(this._chatTimerId);
     clearTimeout(this._channelTimerId);
     clearTimeout(this._smileDefinitionUrlTimerId);
+};
+
+funstream.prototype._login = function() {
+    return new this._promise(function (fulfill, reject) {
+        this._request({
+                method: "POST",
+                url: this._API_URL + "/api/user/login",
+                json: true,
+                body: {
+                    "name": this._username,
+                    "password": this._password,
+                }
+            },
+            function (err, response, body) {
+                if (this._isStopped) {
+                    return;
+                }
+                if (err || response.statusCode !== 200) {
+                    return reject("Не удалось получить идентификатор канала.");
+                }
+                fulfill({ "token": body.token, "userId": body.current.id});
+            }.bind(this)
+        );
+    }.bind(this));
 };
 
 funstream.prototype._findChannelId = function() {
@@ -155,13 +174,11 @@ funstream.prototype._connect = function() {
     var io = require('socket.io-client');
     this._socket = io.connect('http://funstream.tv:3811', {transports: ['websocket']});
 
-    this._socket.on('connect', function (data) {
-        if (this._username && this._password) {
-            this._socket.emit('/chat/login', { token: this._password}, function (data) {
-                console.log("" + JSON.stringify(data));
-            });
+    this._socket.on('connect', function () {
+        if (this._token) {
+            this._socket.emit('/chat/login', { token: this._token});
         }
-        this._socket.emit('/chat/join', {channel: "stream/" + this._channelId}, function (data) {
+        this._socket.emit('/chat/join', {channel: "stream/" + this._channelId}, function () {
             this._socket.emit('/chat/history',
                 {"channel":"stream/"+this._channelId, "amount":20,"query":{"conditions":[],"groups":[],"glue":"and"}},
                 function (data) {
@@ -178,10 +195,17 @@ funstream.prototype._connect = function() {
 };
 
 funstream.prototype._processMessage = function(message) {
+    if (this._receivedMessageIds.has(message.id)) {
+        return;
+    }
+    this._receivedMessageIds.add(message.id);
+
     var chatMessage = new Message();
-    chatMessage.message = this._htmlify(message.text);
-    chatMessage.nickname = message.from.name;
     chatMessage.id = message.id;
+    var messageText = (message.to != null ? "[b]" + message.to.name + "[/b], " : "") + message.text;
+    chatMessage.message = this._htmlify(messageText);
+    chatMessage.nickname = message.from.name;
+    this._usersIdentifiers[message.from.name] = message.from.id;
     chatMessage.time = new Date(message.time * 1000);
     var streamerName = this._streamerName || this.channel;
     var donate = message.type === "donate" || message.type === "fastdonate";
