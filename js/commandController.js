@@ -29,7 +29,7 @@ CommandController.prototype._tellUserRank = function(user, chat, channel) {
                 message += ". Достигнут максимальный уровень";
             } else {
                 var nextExp = Math.ceil((nextRankExp - userInfo.exp) / 10);
-                message += ". До следующего уровеня " + nextExp + " опыта.";
+                message += ". До следующего уровня " + nextExp + " опыта.";
             }
         }
         this._chatSource.postMessage(message, user, chat, channel);
