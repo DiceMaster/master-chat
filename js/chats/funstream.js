@@ -36,6 +36,13 @@ funstream.prototype.displayName = "funstream.tv";
 funstream.prototype.channel = null;
 
 funstream.prototype.chatImage = "sc2tv_logo.png";
+funstream.prototype.specialRanks = {
+    "funstream_prime": {
+        "exp": -1,
+        "icon": "img/sc2tv_prime.png",
+        "title": "PrimeTime"
+    }
+};
 
 funstream.prototype.stopChat = function () {
     this._stopChat();
