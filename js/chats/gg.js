@@ -74,7 +74,7 @@ gg.prototype.postMessage = function(message, to) {
         "type": "send_message",
         "data": {
             "channel_id": this._channelId,
-            "text": (to + ", " || "") +  message, //html-разметка эскейпится
+            "text": (to + ", " || "") +  message,
             "hideIcon": false,
             "mobile": false
         }
@@ -82,7 +82,6 @@ gg.prototype.postMessage = function(message, to) {
     this._socket.send(JSON.stringify(chatMessage));
 };
 
-gg.prototype._CHAT_URL = "ws://goodgame.ru:8080/";
 gg.prototype._CHAT_URL = "http://chat.goodgame.ru/chat/websocket/";
 gg.prototype._LOGIN_URL = " http://goodgame.ru/ajax/chatlogin/";
 gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
@@ -274,12 +273,17 @@ gg.prototype._loadSmileStylesAndDefinitions = function (definitionUrl, globalCss
 };
 
 gg.prototype._connect = function () {
-    this._socket = new SockJS("http://goodgame.ru/chat/websocket/");
+    this._socket = new SockJS(this._CHAT_URL);
     this._socket.onclose = function() {
+        console.log("GG chat closed. Reconnecting.");
         this._socket = null;
-        setInterval(this._connect.bind(this), this._CHANNEL_RETRY_INTERVAL);
+        setTimeout(this._connect.bind(this), this._RETRY_INTERVAL);
     }.bind(this);
     this._socket.onmessage = function(evt) {
+        if (!this._socket) {
+            console.log("Received a message while _socket is null. " + JSON.stringify(evt));
+            return;
+        }
         this._processWebSocketMessage(JSON.parse(evt.data));
     }.bind(this);
     this._socket.onerror = function(err) {
