@@ -11,6 +11,11 @@ CommandController.prototype._onMessage = function(message){
     if (message.message.indexOf("!") !== 0) {
         return;
     }
+    var twoHoursAgo = new Date();
+    twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+    if (message.time < twoHoursAgo) {
+        return;
+    }
     if (message.message.indexOf("!exp") === 0) {
         this._tellUserRank(message.nickname, message.chat, message.channel);
         return;
