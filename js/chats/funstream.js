@@ -226,8 +226,8 @@ funstream.prototype._processMessage = function(message) {
 };
 
 funstream.prototype._URLPatternStr = '((?:(?:ht|f)tps?)(?:://))' + '(((?:(?:[a-z\u0430-\u0451\\d](?:[a-z\u0430-\u0451\\d-]*[a-z\u0430-\u0451\\d])*)\\.)+(?:[a-z]{2,}|\u0440\u0444)' + '|(?:(?:\\d{1,3}\\.){3}\\d{1,3}))' + '(:\\d+)?' + '(/[-a-z\u0430-\u0451\\d%_~\\+\\(\\):]*(?:[\\.,][-a-z\u0430-\u0451\\d%_~\\+\\(\\):]+)*)*' + '(\\?(?:&amp;|&quot;|&#039|[&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?' + '(#(?:&amp;|&quot;|&#039|[\*!\(\)\/&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?)';
-funstream.prototype._bbCodeURLPattern = new RegExp('\\[url\\]' + sc2tv.prototype._URLPatternStr + '\\[\/url\\]()', 'gi');
-funstream.prototype._bbCodeURLWithTextPattern = new RegExp('\\[url=' + sc2tv.prototype._URLPatternStr + '\\]([\u0020-\u007E\u0400-\u045F\u0490\u0491\u0207\u0239\u2012\u2013\u2014]+?)\\[\/url\\]', 'gi');
+funstream.prototype._bbCodeURLPattern = new RegExp('\\[url\\]' + funstream.prototype._URLPatternStr + '\\[\/url\\]()', 'gi');
+funstream.prototype._bbCodeURLWithTextPattern = new RegExp('\\[url=' + funstream.prototype._URLPatternStr + '\\]([\u0020-\u007E\u0400-\u045F\u0490\u0491\u0207\u0239\u2012\u2013\u2014]+?)\\[\/url\\]', 'gi');
 funstream.prototype._bbCodeBoldPattern = new RegExp('\\[b\\]([\\s\\S]+?)\\[/b\\]', 'gi');
 
 funstream.prototype._bbCodeToHtml = function (str) {
