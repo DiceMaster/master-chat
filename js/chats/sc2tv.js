@@ -191,8 +191,6 @@ sc2tv.prototype._startChat = function () {
 sc2tv.prototype._stopChat = function () {
     this._isStopped = true;
     clearInterval(this._chatTimerId);
-    clearTimeout(this._channelTimerId);
-    clearTimeout(this._smileDefinitionUrlTimerId);
 };
 
 sc2tv.prototype._readChat = function () {
@@ -200,47 +198,47 @@ sc2tv.prototype._readChat = function () {
         ifModified: true,
         cache: true
     });
-    $.getJSON(this._CHAT_URL + 'memfs/channel-' + this._channelId + '.json', function(jsonData) {
-        if (this._isStopped) {
-            return;
-        }
-        if (jsonData === undefined) {
-            return;
-        }
-        var jsonMessages = jsonData.messages;
-        for (var i = jsonMessages.length - 1; i >=0; --i) {
-            var chatMessage = new Message();
-            chatMessage.message = this._htmlify(jsonMessages[i].message);
-            chatMessage.nickname = jsonMessages[i].name;
-            chatMessage.id = jsonMessages[i].id;
-            chatMessage.time = new Date(jsonMessages[i].date);
-            var streamerName = this._streamerName || this.channel;
-            var isPrime = jsonMessages[i].uid == -2;
-            if (isPrime) {
-                chatMessage.rankId = "sc2tv_prime";
+
+    $.getJSON(this._CHAT_URL + 'memfs/channel-' + this._channelId + '.json')
+        .done(function(jsonData) {
+            if (this._isStopped) {
+                return;
             }
-            var startsWithStreamerName = jsonMessages[i].message.toLowerCase().indexOf("[b]" + streamerName.toLowerCase() + "[/b]") === 0;
-            chatMessage.isPersonal = isPrime || startsWithStreamerName;
-            if (typeof(this.onMessage) === "function") {
-                this.onMessage(this, chatMessage);
+            if (jsonData === undefined) {
+                return;
             }
-        }
-    }.bind(this));
+            var jsonMessages = jsonData.messages;
+            for (var i = jsonMessages.length - 1; i >=0; --i) {
+                var chatMessage = new Message();
+                chatMessage.message = this._htmlify(jsonMessages[i].message);
+                chatMessage.nickname = jsonMessages[i].name;
+                chatMessage.id = jsonMessages[i].id;
+                chatMessage.time = new Date(jsonMessages[i].date);
+                var streamerName = this._streamerName || this.channel;
+                var isPrime = jsonMessages[i].uid == -2;
+                if (isPrime) {
+                    chatMessage.rankId = "sc2tv_prime";
+                }
+                var startsWithStreamerName = jsonMessages[i].message.toLowerCase().indexOf("[b]" + streamerName.toLowerCase() + "[/b]") === 0;
+                chatMessage.isPersonal = isPrime || startsWithStreamerName;
+                if (typeof(this.onMessage) === "function") {
+                    this.onMessage(this, chatMessage);
+                }
+            }
+        }.bind(this));
 };
 
 sc2tv.prototype._URLPatternStr = '((?:(?:ht|f)tps?)(?:://))' + '(((?:(?:[a-z\u0430-\u0451\\d](?:[a-z\u0430-\u0451\\d-]*[a-z\u0430-\u0451\\d])*)\\.)+(?:[a-z]{2,}|\u0440\u0444)' + '|(?:(?:\\d{1,3}\\.){3}\\d{1,3}))' + '(:\\d+)?' + '(/[-a-z\u0430-\u0451\\d%_~\\+\\(\\):]*(?:[\\.,][-a-z\u0430-\u0451\\d%_~\\+\\(\\):]+)*)*' + '(\\?(?:&amp;|&quot;|&#039|[&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?' + '(#(?:&amp;|&quot;|&#039|[\*!\(\)\/&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?)';
 sc2tv.prototype._bbCodeURLPattern = new RegExp('\\[url\\]' + sc2tv.prototype._URLPatternStr + '\\[\/url\\]()', 'gi');
 sc2tv.prototype._bbCodeURLWithTextPattern = new RegExp('\\[url=' + sc2tv.prototype._URLPatternStr + '\\]([\u0020-\u007E\u0400-\u045F\u0490\u0491\u0207\u0239\u2012\u2013\u2014]+?)\\[\/url\\]', 'gi');
-sc2tv.prototype._URLPattern = new RegExp(this._URLPatternStr, 'gi');
 sc2tv.prototype._bbCodeBoldPattern = new RegExp('\\[b\\]([\\s\\S]+?)\\[/b\\]', 'gi');
 
 sc2tv.prototype._bbCodeToHtml = function (str) {
     str = str.replace(this._bbCodeURLWithTextPattern, this._bbCodeURLToHtml);
     str = str.replace(this._bbCodeURLPattern, this._bbCodeURLToHtml);
-//    str = str.replace(this._URLPattern, this._bbCodeURLToHtml);
     str = str.replace(this._bbCodeBoldPattern, '<strong>$1</strong>');
     return str;
-}
+};
 
 sc2tv.prototype._bbCodeURLToHtml = function (str, proto, url, host, port, path, query, fragment, text) {
     url = url.replace(/:s:/gi, ':%73:');
@@ -253,7 +251,7 @@ sc2tv.prototype._bbCodeURLToHtml = function (str, proto, url, host, port, path, 
         length = text.length;
         return '<a rel="nofollow" href="' + proto + url + '" target="_blank" title="' + proto + url + '">' + text.substring(0, 30) + '...' + text.substring(length - 20) + '</a>';
     }
-}
+};
 
 sc2tv.prototype._CHAT_IMG_PATH = 'http://chat.sc2tv.ru/img/';
 sc2tv.prototype._smileDefinition = null;
