@@ -83,6 +83,7 @@ gg.prototype.postMessage = function(message, to) {
 };
 
 gg.prototype._CHAT_URL = "ws://goodgame.ru:8080/";
+gg.prototype._CHAT_URL = "http://chat.goodgame.ru/chat/websocket/";
 gg.prototype._LOGIN_URL = " http://goodgame.ru/ajax/chatlogin/";
 gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
 gg.prototype._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
