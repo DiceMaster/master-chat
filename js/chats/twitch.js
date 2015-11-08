@@ -58,7 +58,7 @@ twitch.prototype.name = "twitch";
 twitch.prototype.displayName = "Twitch.tv";
 twitch.prototype.channel = null;
 
-twitch.prototype.chatImage = "twitch_logo.png";
+twitch.prototype.chatLogoClass = "chat_twitch_logo";
 
 twitch.prototype.postMessage = function(message, to) {
     if (!this._client) {

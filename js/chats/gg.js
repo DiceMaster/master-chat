@@ -53,7 +53,7 @@ gg.prototype.name = "gg";
 gg.prototype.displayName = "GoodGame.ru";
 gg.prototype.channel = null;
 
-gg.prototype.chatImage = "gg_logo.png";
+gg.prototype.chatLogoClass = "chat_goodgame_logo";
 
 gg.prototype.stopChat = function () {
     this._isStopped = true;

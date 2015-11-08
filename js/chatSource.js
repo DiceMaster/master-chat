@@ -152,7 +152,7 @@ ChatSource.prototype._addMessage = function (message, rankId) {
     message.rankIcon = rank.icon;
     message.rankTitle = rank.title;
 
-    message.chatLogo = chat.chatImage;
+    message.chatLogo = chat.chatLogoClass;
     this._messages.push(message);
 
     this._notifyListeners(message);

@@ -35,7 +35,7 @@ funstream.prototype.name = "funstream";
 funstream.prototype.displayName = "funstream.tv";
 funstream.prototype.channel = null;
 
-funstream.prototype.chatImage = "sc2tv_logo.png";
+funstream.prototype.chatLogoClass = "chat_sc2tv_logo";
 funstream.prototype.specialRanks = {
     "funstream_prime": {
         "exp": -1,
