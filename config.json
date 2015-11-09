@@ -8,6 +8,11 @@
     {
       "type": "gg",
       "channelId": "DiceMaster"
+    },
+    {
+      "type": "youtube",
+      "username": "DiceMaster",
+      "channelId": "<your stream id>"
     }
   ],
   "experience": {
