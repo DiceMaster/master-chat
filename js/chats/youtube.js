@@ -16,7 +16,7 @@ youtube.prototype.name = "youtube";
 youtube.prototype.displayName = "YouTube.com";
 youtube.prototype.channel = null;
 
-youtube.prototype.chatImage = "youtube_logo.png";
+youtube.prototype.chatLogoClass = "chat_youtube_logo";
 
 youtube.prototype.stopChat = function () {
     this._stopChat();
