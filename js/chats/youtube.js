@@ -81,7 +81,8 @@ youtube.prototype._processComment = function(comment) {
     chatMessage.message = comment.comment;
     chatMessage.nickname = comment.author_name;
     chatMessage.time = new Date(comment.time_created * 1000);
-    chatMessage.isPersonal = false;
+    chatMessage.isPersonal = (comment.comment.indexOf(this._username + ",") === 0) ||
+                             (comment.comment.indexOf("+" + this._username + " ") === 0);
     if (typeof(this.onMessage) === "function") {
         this.onMessage(this, chatMessage);
     }
