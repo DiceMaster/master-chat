@@ -15,7 +15,7 @@ var funstream = function(channel, username, password) {
     this._promise.all(promises)
         .then(function (results) {
                 this._channelId = results[0];
-                this._smiles = this._flattenSmiles(results[1]);
+                this._smiles = results[1];
                 if (this._username && this._password) {
                     this._token = results[2].token;
                     this._userId = results[2].userId;
@@ -69,7 +69,6 @@ funstream.prototype.postMessage = function(message, to) {
 funstream.prototype._API_URL = "http://funstream.tv";
 funstream.prototype._CHAT_URL = "http://funstream.tv:3811";
 funstream.prototype._OAUTH_URL = "http://funstream.tv/oauth/";
-funstream.prototype._SMILE_URL = "http://funstream.tv/build/images/smiles/";
 funstream.prototype._CHANNEL_RETRY_INTERVAL = 10000;
 funstream.prototype._CHAT_RELOAD_INTERVAL = 5000;
 
@@ -119,7 +118,7 @@ funstream.prototype._login = function() {
                     return;
                 }
                 if (err || response.statusCode !== 200) {
-                    return reject("Не удалось получить идентификатор канала.");
+                    return reject("Не удалось получить токен для бота.");
                 }
                 fulfill({ "token": body.token, "userId": body.current.id});
             }.bind(this)
@@ -265,7 +264,7 @@ funstream.prototype._htmlify = function (message) {
         var smile = this._smiles[iSmile];
         message = message.replace(
             ":" + smile.code + ":",
-            '<img src="' + this._SMILE_URL + smile.image + '" width="' + smile.width + '" height="' + smile.height + '" title="' + smile.code + '"/>');
+            '<img class="chat-smile" src="' +smile.url + '" width="' + smile.width + '" height="' + smile.height + '" title="' + smile.code + '"/>');
     }
     return message;
 };
