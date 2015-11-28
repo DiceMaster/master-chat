@@ -159,9 +159,9 @@ twitch.prototype._processEmoticons = function(message, emotes) {
 twitch.prototype._htmlifyEmoticons = function(message) {
     return message.replace(/\$emoticon(#w\d+)?(#h\d+)?#(\d+)#([^\$]+)\$/g, function (code, width, height, emoteId, emoteRegex) {
         if (width === undefined || height === undefined) {
-            return "<img src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
+            return "<img class='chat-smile' src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
         } else {
-            return "<img width='" + width.substr(2) + "' height='" + height.substr(2) + "' src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
+            return "<img class='chat-smile' width='" + width.substr(2) + "' height='" + height.substr(2) + "' src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
         }
     });
 };

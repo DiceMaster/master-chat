@@ -259,7 +259,7 @@ sc2tv.prototype._smileHtmlReplacement = null;
 
 sc2tv.prototype._buildSmilesReplacement = function(sc2tvSmiles) {
     for (i = 0; i < sc2tvSmiles.length; i++) {
-        this._smileHtmlReplacement[i] = '<img src="' + this._CHAT_IMG_PATH + sc2tvSmiles[i].img + '" width="' + sc2tvSmiles[i].width + '" height="' + sc2tvSmiles[i].height + '" class="sc2tv-smile"/>';
+        this._smileHtmlReplacement[i] = '<img src="' + this._CHAT_IMG_PATH + sc2tvSmiles[i].img + '" width="' + sc2tvSmiles[i].width + '" height="' + sc2tvSmiles[i].height + '" class="chat-smile sc2tv-smile"/>';
     }
 };
 

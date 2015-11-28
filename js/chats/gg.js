@@ -408,10 +408,10 @@ gg.prototype._htmlify = function (message, isPremium) {
     for (var i = 0, len = this._allSmiles.length; i < len; ++i) {
         if (message.indexOf(":" + this._allSmiles[i].name + ":") != -1) {
             if (this._allSmiles[i].animated && isPremium) {
-                var animatedImgString = "<img src='http://goodgame.ru/images/chat/blank.gif' title='smilename' name='smilename' class='smiles smilename animated'>".replace(/smilename/g, this._allSmiles[i].name);
+                var animatedImgString = "<img src='http://goodgame.ru/images/chat/blank.gif' title='smilename' name='smilename' class='chat-smile smiles smilename animated'>".replace(/smilename/g, this._allSmiles[i].name);
                 message = message.split(":" + this._allSmiles[i].name + ":").join(animatedImgString);
             } else {
-                var imgString = "<img src='http://goodgame.ru/images/chat/blank.gif' title='smilename' name='smilename' class='smiles smilename'>".replace(/smilename/g, this._allSmiles[i].name);
+                var imgString = "<img src='http://goodgame.ru/images/chat/blank.gif' title='smilename' name='smilename' class='chat-smile smiles smilename'>".replace(/smilename/g, this._allSmiles[i].name);
                 message = message.split(":" + this._allSmiles[i].name + ":").join(imgString);
             }
         }
