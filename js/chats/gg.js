@@ -82,7 +82,7 @@ gg.prototype.postMessage = function(message, to) {
     this._socket.send(JSON.stringify(chatMessage));
 };
 
-gg.prototype._CHAT_URL = "http://chat.goodgame.ru/chat/websocket/";
+gg.prototype._CHAT_URL = "http://chat.goodgame.ru/chat/";
 gg.prototype._LOGIN_URL = " http://goodgame.ru/ajax/chatlogin/";
 gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
 gg.prototype._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
