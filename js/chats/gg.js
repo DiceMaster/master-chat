@@ -8,13 +8,10 @@ var gg = function(channel, username, password) {
     var resourcesPromise = this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel))
         .then(function(channelId){
             this._channelId = channelId;
-            return this._findSmileStylesAndDefinitionsURL(this._CHANNEL_URL + channel);
-        }.bind(this))
-        .then(function(urls){
             return this._promise.all([
-                this._getSmileDefinition(urls.smileDefinitionUrl),
-                this._getCss(urls.globalSmilesCssUrl),
-                this._getCss(urls.channelsSmilesCssUrl)
+                this._getSmileDefinition(this._SMILES_DEFINITION_URL),
+                this._getCss(this._SMILES_COMMON_CSS_URL),
+                this._getCss(this._SMILES_CHANNELS_CSS_URL)
             ]);
         }.bind(this));
 
@@ -86,6 +83,9 @@ gg.prototype._CHAT_URL = "http://chat.goodgame.ru/chat/";
 gg.prototype._LOGIN_URL = " http://goodgame.ru/ajax/chatlogin/";
 gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
 gg.prototype._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
+gg.prototype._SMILES_DEFINITION_URL = "http://goodgame.ru/js/minified/global.js";
+gg.prototype._SMILES_COMMON_CSS_URL = "http://goodgame.ru/css/compiled/common_smiles.css";
+gg.prototype._SMILES_CHANNELS_CSS_URL = "http://goodgame.ru/css/compiled/channels_smiles.css";
 gg.prototype._RETRY_INTERVAL = 10000;
 
 gg.prototype._socket = null;
@@ -172,38 +172,6 @@ gg.prototype._findChannelId = function (url) {
                 }
             }
             fulfill(id);
-        }.bind(this));
-    }.bind(this));
-};
-
-gg.prototype._findSmileStylesAndDefinitionsURL = function (url) {
-    return new this._promise(function(fulfill, reject) {
-        $.get(url).done(function (data) {
-            if (this._isStopped) {
-                return;
-            }
-            var smileDefinitionUrlMatch = data.match(/src="(http:\/\/goodgame\.ru\/js\/minified\/global\.js\?[a-z0-9]*)"/i);
-            if (smileDefinitionUrlMatch === null) {
-                return reject("Не удалось получить адрес списка смайлов.");
-            }
-            var globalSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/common_smiles\.css\?[a-z0-9]*)"/i);
-            if (globalSmilesCssUrlMatch === null) {
-                return reject("Не удалось получить адрес стилей общих смайлов.");
-            }
-            var channelsSmilesCssUrlMatch = data.match(/href="(http:\/\/goodgame.ru\/css\/compiled\/channels_smiles\.css\?[a-z0-9]*)"/i);
-            if (channelsSmilesCssUrlMatch === null) {
-                return reject("Не удалось получить адрес стилей смайлов каналов.");
-            }
-            fulfill({
-                "smileDefinitionUrl": smileDefinitionUrlMatch[1],
-                "globalSmilesCssUrl": globalSmilesCssUrlMatch[1],
-                "channelsSmilesCssUrl": channelsSmilesCssUrlMatch[1]
-            });
-        }.bind(this)).fail(function() {
-            if (this._isStopped) {
-                return;
-            }
-            return reject("Не удалось получить адрес стилей и списка смайлов.");
         }.bind(this));
     }.bind(this));
 };
