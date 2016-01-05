@@ -149,6 +149,7 @@ ChatSource.prototype._addMessage = function (message, rankId) {
     if (rank === undefined) {
         rank = this._getChannelSpecialRank(chat, rankId);
     }
+    message.rankId = rankId;
     message.rankIcon = rank.icon;
     message.rankTitle = rank.title;
 

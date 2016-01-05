@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="css/default.css">
+    <link rel="stylesheet" type="text/css" href="css/giveaway.css">
+    <script src="js/vendor/jquery-2.1.4.min.js"></script>
+    <title>Розыгрыш</title>
+</head>
+<body>
+    <div class="giveaway-settings" id="giveaway-settings">
+        <p><b>Ключевое слово:</b><br>
+            <input id="giveaway-keyword" type="text" size="40">
+        </p>
+        <p><b>Длительность:</b><br>
+            <input id="giveaway-duration" type="text" size="20" value="60"> сек
+        </p>
+        <p><b>Количество победителей:</b><br>
+            <input id="giveaway-winners-count" type="text" size="20" value="1">
+        </p>
+        <button type="button" id="giveaway-start">Начать</button>
+    </div>
+
+    <div class="giveaway-list" id="giveaway-list">
+        <div class="giveaway-time">Осталось времени: <span id="giveaway-time-value">0</span> сек</div>
+        <div class="giveaway-participants-count">Всего участников: <span id="giveaway-participants-count-value">0</span></div>
+        <div class="giveaway-participants" id="giveaway-participants">
+
+        </div>
+    </div>
+
+    <div class="giveaway-winners" id="giveaway-winners">
+        <div class="giveaway-winners-title" id="giveaway-winners-title">Победители:</div>
+        <div class="giveaway-winners-list" id="giveaway-winners-list">
+
+        </div>
+        <button type="button" id="giveaway-restart">Заново</button>
+    </div>
+</body>
+</html>

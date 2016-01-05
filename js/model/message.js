@@ -3,6 +3,9 @@ var Message = function () {
 };
 
 Message.prototype.id = null;
+Message.prototype.rankId = undefined;
+Message.prototype.rankIcon = null;
+Message.prototype.rankTitle = null;
 Message.prototype.chat = null;
 Message.prototype.chatLogo = null;
 Message.prototype.channel = null;

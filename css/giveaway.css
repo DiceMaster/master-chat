@@ -1,0 +1,57 @@
+body {
+    background-color: #151515;
+    color: #dcdcdc;
+    font-size: 20px;
+}
+
+.chat_logo {
+    position: relative;
+    display: inline-block;
+    margin: 0 4px 0 0;
+}
+
+.giveaway-winners-title {
+    margin:10px;
+}
+
+.giveaway-winners {
+    text-align: center;
+}
+
+.username {
+    font-weight: bold;
+}
+
+.username-normal {
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 16px;
+    color: #7797be!important;
+}
+
+.chat_goodgame_logo {
+    content: url(../templates/default/gg_logo.png);
+}
+
+.chat_sc2tv_logo {
+    content: url(../templates/default/sc2tv_logo.png);
+}
+
+.chat_twitch_logo {
+    content: url(../templates/default/twitch_logo.png);
+}
+
+.chat_youtube_logo {
+    content: url(../templates/default/youtube_logo.png);
+}
+
+#giveaway-restart {
+    margin-top: 20px;
+}
+
+.giveaway-user {
+    display: inline-block;
+    padding: 2px;
+    margin: 3px;
+    border: 1px solid #555555;
+    border-radius: 3px;
+}

@@ -8,6 +8,7 @@
     <script src="js/model/channel.js"></script>
     <script src="js/model/message.js"></script>
     <script src="js/model/user.js"></script>
+    <script src="js/model/giveawayUser.js"></script>
     <script src="js/model/rankedQueueUser.js"></script>
     <script src="js/chats/sc2tv.js"></script>
     <script src="js/chats/funstream.js"></script>
@@ -20,9 +21,11 @@
     <script src="js/chatSource.js"></script>
     <script src="js/vendor/handlebars.3.0.3.min.js"></script>
     <script src="js/theme.js"></script>
-    <script src="js/chatWindowViewController.js"></script>
+    <script src="js/controllers/chatWindowViewController.js"></script>
     <script src="js/rankedQueueService.js"></script>
-    <script src="js/rankQueueViewController.js"></script>
+    <script src="js/controllers/rankQueueViewController.js"></script>
+    <script src="js/giveawayService.js"></script>
+    <script src="js/controllers/giveawayViewController.js"></script>
     <script src="js/commandController.js"></script>
     <script>
         $(function () {
@@ -39,6 +42,7 @@
             var chatSource = new ChatSource(configSource, rankController);
             var rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
             new CommandController(chatSource, rankController);
+            var giveawayService = new GiveawayService(rankController, chatSource);
             new ChatWindowViewController($("#message_list"), chatSource, configSource);
 
             document.body.addEventListener('contextmenu', function(ev) {
@@ -49,6 +53,11 @@
                     new RankedQueueViewController(rankedQueueService);
                 };
                 menu.append(queueItem);
+                var giveawayItem = new gui.MenuItem({ label: 'Розыгрыш' });
+                giveawayItem.click = function() {
+                    new GiveawayViewController(giveawayService);
+                };
+                menu.append(giveawayItem);
                 menu.popup(ev.x, ev.y);
                 return false;
             });

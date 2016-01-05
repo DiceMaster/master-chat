@@ -6,6 +6,8 @@ var ChatWindowViewController = function(view, chatSource, configSource) {
 
     this._chatSource = chatSource;
     this._chatSource.addMessageListener(this._onmessage.bind(this));
+
+    this._registerHotkeys();
 };
 
 ChatWindowViewController.prototype._chatSource = null;
@@ -17,6 +19,24 @@ ChatWindowViewController.prototype._autoScrollThreshold  = 50;
 
 ChatWindowViewController.prototype._loadTheme = function (name) {
     return new Theme(name);
+};
+
+ChatWindowViewController.prototype._registerHotkeys = function() {
+    var gui = require('nw.gui');
+
+    var option = {
+        key : "Ctrl+Shift+Up",
+        active : function() {
+            console.log("Global desktop keyboard shortcut: " + this.key + " active.");
+        },
+        failed : function(msg) {
+            // :(, fail to register the |key| or couldn't parse the |key|.
+            console.log(msg);
+        }
+    };
+
+    var shortcut = new gui.Shortcut(option);
+    gui.App.registerGlobalHotKey(shortcut);
 };
 
 ChatWindowViewController.prototype._applyThemeStyle = function (theme) {

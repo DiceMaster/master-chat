@@ -8,5 +8,6 @@
     <file url="file://$PROJECT_DIR$/js/chats/sc2tv.js" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/js/chats/twitch.js" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/js/commandController.js" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/js/controllers/giveawayViewController.js" charset="UTF-8" />
   </component>
 </project>
