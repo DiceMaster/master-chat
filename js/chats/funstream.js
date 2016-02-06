@@ -178,7 +178,13 @@ funstream.prototype._flattenSmiles = function(smiles) {
 
 funstream.prototype._connect = function() {
     var io = require('socket.io-client');
-    this._socket = io.connect('http://funstream.tv:3811', {transports: ['websocket']});
+    this._socket = io('wss://funstream.tv', {
+        transports: ['websocket'],
+        'reconnect': true,
+        'reconnectionDelay': 500,
+        'reconnectionDelayMax': 2000,
+        'reconnectionAttempts': Infinity
+    });
 
     this._socket.on('connect', function () {
         if (this._token) {
@@ -198,6 +204,13 @@ funstream.prototype._connect = function() {
     this._socket.on('/chat/message', function(data) {
         this._processMessage(data);
     }.bind(this));
+    this._socket.on('connect_error', function(error) {
+        console.log('Funstream.tv connection error: ' + error);
+    });
+
+    this._socket.on('reconnect', function() {
+        console.log('Funstream.tv reconnection');
+    });
 };
 
 funstream.prototype._processMessage = function(message) {
