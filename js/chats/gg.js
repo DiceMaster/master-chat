@@ -79,8 +79,8 @@ gg.prototype.postMessage = function(message, to) {
     this._socket.send(JSON.stringify(chatMessage));
 };
 
-gg.prototype._CHAT_URL = "http://chat.goodgame.ru/chat/";
-gg.prototype._LOGIN_URL = " http://goodgame.ru/ajax/chatlogin/";
+gg.prototype._CHAT_URL = "http://chat.goodgame.ru:8081/chat/";
+gg.prototype._LOGIN_URL = " https://goodgame.ru/ajax/chatlogin/";
 gg.prototype._CHANNEL_URL = "http://goodgame.ru/chat2/";
 gg.prototype._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
 gg.prototype._SMILES_DEFINITION_URL = "http://goodgame.ru/js/minified/global.js";
