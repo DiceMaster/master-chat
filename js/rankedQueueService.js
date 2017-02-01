@@ -11,16 +11,20 @@ var RankedQueueService = function(filename, appLifeCycleService, rankController,
     this._chatSource = chatSource;
 };
 
-RankedQueueService.prototype.onupdate = null;
+RankedQueueService.prototype.onQueueUpdate = null;
+RankedQueueService.prototype.onRemovedFromQueueUpdate = null;
 
-RankedQueueService.prototype.addUserToQueue = function(username) {
+RankedQueueService.prototype.addUserToQueue = function(username, callback) {
     var time = new Date();
-    this._rankController.getRankId(username, function(rankId) {
+    this._rankController.getUserRankAndExp(username, function(userRankAndExp) {
         var user = new RankedQueueUser();
         user.username = username;
-        user.rankId = rankId;
+        user.rankId = userRankAndExp.rankId;
         user.time = time;
-        this._addUser(user);
+        var position = this._addUser(user);
+        if (typeof callback === "function") {
+            callback(position);
+        }
     }.bind(this));
 };
 
@@ -30,6 +34,7 @@ RankedQueueService.prototype.popUser = function() {
     }
     var user = this._queue.shift();
     this._removedFromQueue.push(user);
+    this._isQueueChanged = true;
     return user;
 };
 
@@ -53,6 +58,7 @@ RankedQueueService.prototype.getRemovedFromQueue = function(username) {
 RankedQueueService.prototype.clearQueue = function() {
     this._queue = [];
     this._removedFromQueue = [];
+    this._isQueueChanged = true;
     this._saveQueue();
 };
 
@@ -77,7 +83,7 @@ RankedQueueService.prototype._compareUsers = function(firstUser, secondUser) {
         return 0;
     }
     var firstRank = this._rankController.getRankById(firstUser.rankId);
-    var secondRank = this._rankController.getRankById(second.rankId);
+    var secondRank = this._rankController.getRankById(secondUser.rankId);
     if (firstRank.exp === secondRank.exp) {
         return 0;
     }
@@ -92,7 +98,7 @@ RankedQueueService.prototype._compareUsers = function(firstUser, secondUser) {
 
 RankedQueueService.prototype._sortedIndex = function(value) {
     var low = 0,
-        high = array.length;
+        high = this._queue.length;
 
     while (low < high) {
         var mid = (low + high) >>> 1;
@@ -106,7 +112,13 @@ RankedQueueService.prototype._sortedIndex = function(value) {
 };
 
 RankedQueueService.prototype._addUser = function (user) {
-    this._queue.splice(this._sortedIndex(user), 0, user);
+    var insertionIndex = this._sortedIndex(user);
+    this._queue.splice(insertionIndex, 0, user);
+    this._isQueueChanged = true;
+    if (typeof this.onQueueUpdate === "function") {
+        this.onQueueUpdate(this);
+    }
+    return insertionIndex;
 };
 
 
@@ -129,8 +141,11 @@ RankedQueueService.prototype._saveQueue = function () {
         "removedFromQueue": this._removedFromQueue
     };
     this._fs.writeFile(this._queuePath, JSON.stringify(queueAndRemoved, null, 2), function (err) {
-        console.log("Unable to save ranked queue. " + err);
-    });
+        if (err) {
+            return;
+        }
+        this._isQueueChanged = false;
+    }.bind(this));
 };
 
 RankedQueueService.prototype._loadQueue = function (filename) {

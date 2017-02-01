@@ -1,37 +1,56 @@
 <!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
+    <script src="js/vendor/jquery-2.1.4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
     <link rel="stylesheet" type="text/css" href="css/rankedQueue.css">
     <title>Очередь</title>
 </head>
 <body>
-<!--
+
 <div class="tabs">
-    <input type="radio" name="odin" checked="checked" id="tabQueue"/>
-    <label for="tabQueue">В очереди</label>
-    <input type="radio" name="odin" id="tabRemoved"/>
-    <label for="tabRemoved">Выбранные</label>
-    <div>
--->
-        <div class="pop-queue-button" id="pop-queue-button">Достать из очереди</div>
-        <div class="queue-acquired-item" id="queue-acquired-item"></div>
-        <input class="queue-filter-input" id="queue-filter-input" type="text" placeholder="Поиск">
-        <div class="queue-list" id="queue-list"></div>
+    <ul class="tab-links">
+        <li class="active"><a href="#tab1">Еще в очереди</a></li>
+        <li><a href="#tab2">Дождавшиеся очереди</a></li>
+    </ul>
 
-        <script id="queue-item-template" type="text/x-handlebars-template">
-            <div>
-                <img width=20 height=20 class='queue-item-rank' title='{{rankTitle}}' src='{{rankIcon}}'>
-                <span class='queue-item-date'>{{date}}</span>
-                <span class='queue-item-nickname'>{{nickname}}</span>
-            </div>
-        </script>
-<!--
+    <div class="tab-content">
+        <div id="tab1" class="tab active">
+            <div class="pop-queue-button" id="pop-queue-button">Достать из очереди</div>
+            <div class="queue-acquired-item" id="queue-acquired-item"></div>
+            <input class="queue-filter-input" id="queue-filter-input" type="text" placeholder="Поиск">
+            <div class="queue-list" id="queue-list"></div>
+
+            <script id="queue-item-template" type="text/x-handlebars-template">
+                <div>
+                    <img width=20 height=20 class='queue-item-rank' title='{{rankTitle}}' src='{{rankIcon}}'>
+                    <span class='queue-item-date'>{{date}}</span>
+                    <span class='queue-item-nickname'>{{nickname}}</span>
+                </div>
+            </script>
+        </div>
+
+        <div id="tab2" class="tab">
+            <p>Tab #2 content goes here!</p>
+            <p>Donec pulvinar neque sed semper lacinia. Curabitur lacinia ullamcorper nibh; quis imperdiet velit eleifend ac. Donec blandit mauris eget aliquet lacinia! Donec pulvinar massa interdum risus ornare mollis. In hac habitasse platea dictumst. Ut euismod tempus hendrerit. Morbi ut adipiscing nisi. Etiam rutrum sodales gravida! Aliquam tellus orci, iaculis vel.</p>
+        </div>
     </div>
-    <div>
-        <ul class="removed-list"></ul>
-    </div>
--->
 </div>
+<script>
+    $(function() {
+        $('.tabs .tab-links a').on('click', function(e)  {
+            var currentAttrValue = $(this).attr('href');
 
+            // Show/Hide Tabs
+            $('.tabs ' + currentAttrValue).show().siblings().hide();
+
+            // Change/remove current tab to active
+            $(this).parent('li').addClass('active').siblings().removeClass('active');
+
+            e.preventDefault();
+        });
+    });
+</script>
 </body>
 </html>

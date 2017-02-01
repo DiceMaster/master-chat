@@ -41,8 +41,8 @@
             var rankController = new RankController(configSource);
             var chatSource = new ChatSource(configSource, rankController);
             var rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
-            new CommandController(chatSource, rankController);
             var giveawayService = new GiveawayService(rankController, chatSource);
+            new CommandController(chatSource, rankController, rankedQueueService);
             new ChatWindowViewController($("#message_list"), chatSource, configSource);
 
             document.body.addEventListener('contextmenu', function(ev) {

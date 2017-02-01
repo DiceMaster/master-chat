@@ -1,6 +1,7 @@
-var CommandController = function(chatSource, rankController) {
+var CommandController = function(chatSource, rankController, rankedQueueService) {
     this._chatSource = chatSource;
     this._rankController = rankController;
+    this._rankedQueueService = rankedQueueService;
     this._chatSource.addMessageListener(this._onMessage.bind(this));
 };
 
@@ -18,6 +19,10 @@ CommandController.prototype._onMessage = function(message){
     }
     if (message.message.indexOf("!exp") === 0) {
         this._tellUserRank(message.nickname, message.chat, message.channel);
+        return;
+    }
+    if (message.message.indexOf("!queue") === 0) {
+        this._queueUser(message.nickname, message.chat, message.channel);
         return;
     }
 };
@@ -41,5 +46,19 @@ CommandController.prototype._tellUserRank = function(user, chat, channel) {
     }.bind(this));
 };
 
+CommandController.prototype._queueUser = function(user, chat, channel) {
+    var position = this._rankedQueueService.getUserPosition(user);
+    if (position >= 0) {
+        var message = "Уже в очереди. Текущая позиция " + (position + 1) + ".";
+        this._chatSource.postMessage(message, user, chat, channel);
+        return;
+    }
+    this._rankedQueueService.addUserToQueue(user, function (position) {
+        var message = "Теперь в очереди на позиции " + (position + 1) + ".";
+        this._chatSource.postMessage(message, user, chat, channel);
+    }.bind(this));
+};
+
 CommandController.prototype._chatSource = null;
 CommandController.prototype._rankController = null;
+CommandController.prototype._rankedQueueService = null;
