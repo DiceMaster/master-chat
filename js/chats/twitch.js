@@ -101,6 +101,10 @@ twitch.prototype._connect = function () {
         console.log("Connected to " + address + ":" + port);
     }.bind(this));
 
+    this._client.on("reconnect", function () {
+        console.log("Reconnecting to twitch.tv");
+    });
+
     this._client.on("chat", function (channel, user, message, self) {
         this._processChatMessage(user, message);
     }.bind(this));
