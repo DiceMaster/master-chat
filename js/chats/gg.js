@@ -151,6 +151,7 @@ gg.prototype._applyStyle = function(style) {
         gg._styleElement.setAttribute("type", "text/css");
         document.getElementsByTagName('head')[0].appendChild(gg._styleElement);
     }
+    style = style.replace(/\/images\/smiles\//g, 'http://goodgame.ru/images/smiles/');
     gg._styleElement.innerHTML = style;
 };
 
