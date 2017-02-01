@@ -2,8 +2,8 @@
   "theme": "default",
   "channels": [
     {
-      "type": "sc2tv",
       "channelId": "DiceMaster"
+      "type": "funstream",
     },
     {
       "type": "gg",
