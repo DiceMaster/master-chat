@@ -178,7 +178,7 @@ funstream.prototype._flattenSmiles = function(smiles) {
 
 funstream.prototype._connect = function() {
     var io = require('socket.io-client');
-    this._socket = io('wss://funstream.tv', {
+    this._socket = io('ws://funstream.tv', {
         transports: ['websocket'],
         'reconnect': true,
         'reconnectionDelay': 500,
