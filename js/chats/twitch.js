@@ -81,34 +81,38 @@ twitch.prototype._fs = null;
 
 
 twitch.prototype._connect = function () {
-    var tmi = require("tmi.js");
-    var options = {
-        connection: {
-            random: "chat",
-            reconnect: true
-        },
-        channels: ["#" + this.channel]
-    };
-    if (typeof this._username == "string") {
-        options.identity = {
-            username: this._username,
-            password: this._password
+    try {
+        var tmi = require("tmi.js");
+        var options = {
+            connection: {
+                random: "chat",
+                reconnect: true
+            },
+            channels: ["#" + this.channel]
         };
+        if (typeof this._username == "string") {
+            options.identity = {
+                username: this._username,
+                password: this._password
+            };
+        }
+
+        this._client = new tmi.client(options);
+        this._client.on("connected", function (address, port) {
+            console.log("Connected to " + address + ":" + port);
+        }.bind(this));
+
+        this._client.on("reconnect", function () {
+            console.log("Reconnecting to twitch.tv");
+        });
+
+        this._client.on("chat", function (channel, user, message, self) {
+            this._processChatMessage(user, message);
+        }.bind(this));
+        this._client.connect();
+    } catch (err) {
+        console.log("Error while initializing connection to twitch.tv. " + err.message + ".");
     }
-
-    this._client = new irc.client(options);
-    this._client.on("connected", function (address, port) {
-        console.log("Connected to " + address + ":" + port);
-    }.bind(this));
-
-    this._client.on("reconnect", function () {
-        console.log("Reconnecting to twitch.tv");
-    });
-
-    this._client.on("chat", function (channel, user, message, self) {
-        this._processChatMessage(user, message);
-    }.bind(this));
-    this._client.connect();
 };
 
 twitch.prototype._processChatMessage = function(fromUser, message) {
