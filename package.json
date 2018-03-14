@@ -2,6 +2,7 @@
   "name": "master-chat",
   "version": "0.0.2",
   "main": "index.html",
+  "chromium-args": "--disable-gpu",
   "window": {
     "title": "MasterChat",
     "toolbar": false,
