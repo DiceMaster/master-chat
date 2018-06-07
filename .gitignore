@@ -7,6 +7,12 @@ nwjs-*
 # Ranks.db database
 ranks*.db
 
+# backup folder
+backup
+
+# Twitch.tv cached data
+twitch
+
 # Logs
 logs
 *.log
@@ -35,18 +41,8 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 
-# Users Environment Variables
-.lock-wscript
+# JetBrains IDE
+.idea
 
-# User-specific stuff:
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/dictionaries
-
-## File-based project format:
-*.iws
-
-## Plugin-specific files:
-
-# mpeltonen/sbt-idea plugin
-.idea_modules/
+# Visue Studio Code
+.vscode
