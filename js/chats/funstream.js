@@ -3,7 +3,6 @@ var funstream = function(channel, username, password) {
     this._username = username;
     this._password = password;
     this._request = require("request");
-    this._promise = require("promise");
     this._smiles = [];
     this._usersIdentifiers = {};
     this._receivedMessageIds = new Set();
@@ -12,7 +11,7 @@ var funstream = function(channel, username, password) {
     if (this._username && this._password) {
         promises.push(this._login());
     }
-    this._promise.all(promises)
+    Promise.all(promises)
         .then(function (results) {
                 this._channelId = results[0];
                 this._smiles = results[1];
@@ -81,7 +80,6 @@ funstream.prototype._token = null;
 funstream.prototype._userId = null;
 funstream.prototype._channelId = null;
 funstream.prototype._request = null;
-funstream.prototype._promise = null;
 funstream.prototype._smiles = null;
 funstream.prototype._usersIdentifiers = null;
 funstream.prototype._receivedMessageIds = null;
@@ -103,7 +101,7 @@ funstream.prototype._stopChat = function () {
 };
 
 funstream.prototype._login = function() {
-    return new this._promise(function (fulfill, reject) {
+    return new Promise(function (fulfill, reject) {
         this._request({
                 method: "POST",
                 url: this._API_URL + "/api/user/login",
@@ -127,7 +125,7 @@ funstream.prototype._login = function() {
 };
 
 funstream.prototype._findChannelId = function() {
-    return new this._promise(function (fulfill, reject) {
+    return new Promise(function (fulfill, reject) {
         this._request({
                 method: "POST",
                 url: this._API_URL + "/api/user",
@@ -148,7 +146,7 @@ funstream.prototype._findChannelId = function() {
 };
 
 funstream.prototype._getSmiles = function() {
-    return new this._promise(function (fulfill, reject) {
+    return new Promise(function (fulfill, reject) {
         this._request({
                 method: "POST",
                 url: this._API_URL + "/api/smile",

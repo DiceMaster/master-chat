@@ -3,7 +3,6 @@ var youtube = function(channel, username, password) {
     this._username = username;
     this._password = password;
     this._request = require("request");
-    this._promise = require("promise");
 
     this._startChat();
 };

@@ -3,7 +3,6 @@ var twitch = function (channel, username, password) {
     this._username = username;
     this._password = password;
 
-    this._promise = require("promise");
     this._request = require("request");
     this._fs = require("fs");
 
@@ -75,7 +74,6 @@ twitch.prototype._client = null;
 twitch.prototype._username = null;
 twitch.prototype._password = null;
 twitch.prototype._emoticons = null;
-twitch.prototype._promise = null;
 twitch.prototype._request = null;
 twitch.prototype._fs = null;
 
@@ -204,7 +202,7 @@ twitch.prototype._extractEmotionSizes = function(emoticons) {
 };
 
 twitch.prototype._loadEmoticons = function() {
-    return new this._promise(function(fulfill, reject) {
+    return new Promise(function(fulfill, reject) {
         this._fs.exists(this._EMOTICON_FILE_PATH, function(exists) {
             if (this._isStopped) {
                 return;
@@ -235,7 +233,7 @@ twitch.prototype._loadEmoticons = function() {
 };
 
 twitch.prototype._requestEmoticons = function() {
-    return new this._promise(function(fulfill, reject) {
+    return new Promise(function(fulfill, reject) {
         this._request(this._SMILES_URL, function(error, response, body) {
             if (this._isStopped) {
                 return;

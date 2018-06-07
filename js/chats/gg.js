@@ -3,12 +3,11 @@ var gg = function(channel, username, password) {
     this._username = username;
     this._password = password;
     this._request = require("request");
-    this._promise = require("promise");
 
     var resourcesPromise = this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel))
         .then(function(channelId){
             this._channelId = channelId;
-            return this._promise.all([
+            return Promise.all([
                 this._getSmileDefinition(this._SMILES_DEFINITION_URL),
                 this._getCss(this._SMILES_COMMON_CSS_URL),
                 this._getCss(this._SMILES_CHANNELS_CSS_URL)
@@ -17,7 +16,7 @@ var gg = function(channel, username, password) {
 
     var credentialsProvided = typeof this._username == "string";
     var finalPromise =  credentialsProvided ?
-        this._promise.all([
+        Promise.all([
             resourcesPromise,
             this._login()
         ]) :
@@ -95,12 +94,11 @@ gg.prototype._channelId = null;
 gg.prototype._isStopped = false;
 gg.prototype._allSmiles = null;
 gg.prototype._request = null;
-gg.prototype._promise = null;
 gg.prototype._token = null;
 gg.prototype._userId = null;
 
 gg.prototype._login = function() {
-    return new this._promise(function(fulfill, reject) {
+    return new Promise(function(fulfill, reject) {
         this._request.post({
                 url: this._LOGIN_URL,
                 form: {login: this._username, password: this._password}
@@ -157,7 +155,7 @@ gg.prototype._applyStyle = function(style) {
 };
 
 gg.prototype._findChannelId = function (url) {
-    return new this._promise(function(fulfill, reject) {
+    return new Promise(function(fulfill, reject) {
         this._request(url, function (error, response, body) {
             if (this._isStopped) {
                 return;
@@ -179,7 +177,7 @@ gg.prototype._findChannelId = function (url) {
 };
 
 gg.prototype._getSmileDefinition = function (url) {
-    return new this._promise(function(fulfill, reject) {
+    return new Promise(function(fulfill, reject) {
         this._request(url, function (error, response, body) {
             if (this._isStopped) {
                 return;
@@ -198,7 +196,7 @@ gg.prototype._getSmileDefinition = function (url) {
 };
 
 gg.prototype._getCss = function (url) {
-    return new this._promise(function(fulfill, reject) {
+    return new Promise(function(fulfill, reject) {
         this._request(url, function (error, response, body) {
             if (this._isStopped) {
                 return;
