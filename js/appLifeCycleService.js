@@ -1,7 +1,6 @@
 var AppLifeCycleService = function() {
     this._onCloseListeners = [];
-    var gui = require('nw.gui');
-    this._win = gui.Window.get();
+    this._win = nw.Window.get();
     this._win.on('close', this._onClose.bind(this));
 };
 

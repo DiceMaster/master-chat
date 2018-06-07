@@ -28,8 +28,7 @@
     <script src="js/commandController.js"></script>
     <script>
         $(function () {
-            var gui = require('nw.gui');
-            var win = gui.Window.get();
+            var win = nw.Window.get();
             win.on('new-win-policy', function(frame, url, policy){
                 policy.ignore();
                 gui.Shell.openExternal( url );

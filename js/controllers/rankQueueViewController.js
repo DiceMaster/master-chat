@@ -1,8 +1,7 @@
 var RankedQueueViewController = function(rankerQueueService) {
     this._rankerQueueService = rankerQueueService;
     this._rankerQueueService.onupdate = this._onRankedQueueServiceUpdate.bind(this);
-    this._gui = require('nw.gui');
-    this._window = this._gui.Window.open('rankedQueue.html', {
+    this._window = nw.Window.open('rankedQueue.html', {
         position: 'center',
         toolbar: false,
         width: 400,
@@ -21,7 +20,6 @@ RankedQueueViewController.hide = function () {
 
 
 RankedQueueViewController.prototype._rankerQueueService = null;
-RankedQueueViewController.prototype._gui = null;
 RankedQueueViewController.prototype._window = null;
 
 RankedQueueViewController.prototype._onRankedQueueServiceUpdate = function() {

@@ -3,8 +3,7 @@ var GiveawayViewController = function(giveawayService) {
     this._giveawayService.onstatechange = this._onstatechange.bind(this);
     this._giveawayService.oncountdown = this._oncountdown.bind(this);
     this._giveawayService.onnewparticipant = this._onnewparticipant.bind(this);
-    this._gui = require('nw.gui');
-    this._window = this._gui.Window.open('giveaway.html', {
+    this._window = nw.Window.open('giveaway.html', {
         "position": 'center',
         "toolbar": false,
         "width": 400,
@@ -29,7 +28,6 @@ GiveawayViewController.hide = function () {
 };
 
 GiveawayViewController.prototype._giveawayService= null;
-GiveawayViewController.prototype._gui = null;
 GiveawayViewController.prototype._window = null;
 
 GiveawayViewController.prototype._onstatechange = function (giveawayService, newState) {

@@ -22,8 +22,6 @@ ChatWindowViewController.prototype._loadTheme = function (name) {
 };
 
 ChatWindowViewController.prototype._registerHotkeys = function() {
-    var gui = require('nw.gui');
-
     var option = {
         key : "Ctrl+Shift+Up",
         active : function() {
@@ -35,8 +33,8 @@ ChatWindowViewController.prototype._registerHotkeys = function() {
         }
     };
 
-    var shortcut = new gui.Shortcut(option);
-    gui.App.registerGlobalHotKey(shortcut);
+    var shortcut = new nw.Shortcut(option);
+    nw.App.registerGlobalHotKey(shortcut);
 };
 
 ChatWindowViewController.prototype._applyThemeStyle = function (theme) {
