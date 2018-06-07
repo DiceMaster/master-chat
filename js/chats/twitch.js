@@ -80,11 +80,14 @@ twitch.prototype._fs = null;
 
 twitch.prototype._connect = function () {
     try {
-        var tmi = require("tmi.js");
+        var twitch = require("twitch-js");
         var options = {
+            options: {
+                debug: true
+            },
             connection: {
-                random: "chat",
-                reconnect: true
+                reconnect: true,
+                secure: true
             },
             channels: ["#" + this.channel]
         };
@@ -95,7 +98,7 @@ twitch.prototype._connect = function () {
             };
         }
 
-        this._client = new tmi.client(options);
+        this._client = new twitch.client(options);
         this._client.on("connected", function (address, port) {
             console.log("Connected to " + address + ":" + port);
         }.bind(this));
