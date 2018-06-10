@@ -312,6 +312,12 @@ gg.prototype._processWebSocketMessage = function(message) {
         case "message":
             this._processChatMessage(message.data);
             break;
+        case "premium":
+            this._processPremium(message.data);
+            break;
+        case "payment":
+            this._processDonation(message.data);
+            break;
     }
 };
 
@@ -322,6 +328,32 @@ gg.prototype._processChatMessage = function(message) {
     chatMessage.id = message.message_id;
     chatMessage.time = new Date(message.timestamp * 1000);
     chatMessage.isPersonal = message.text.indexOf(this.channel + ",") === 0;
+    if (typeof(this.onMessage) === "function") {
+        this.onMessage(this, chatMessage);
+    }
+};
+
+gg.prototype._processPremium = function(message) {
+    var chatMessage = new Message();
+    chatMessage.message = "Подписался на премиум!";
+    chatMessage.nickname = message.userName;
+    chatMessage.isPersonal = true;
+    chatMessage.rankId = "donation";
+    if (typeof(this.onMessage) === "function") {
+        this.onMessage(this, chatMessage);
+    }
+};
+
+gg.prototype._processDonation = function(message) {
+    var chatMessage = new Message();
+    chatMessage.message = "Поддержал канал на " + message.amount + "₽";
+    if (message.message) {
+        chatMessage.message += " и сообщает: " + this._htmlify(message.message, true);
+    }
+
+    chatMessage.nickname = message.userName;
+    chatMessage.isPersonal = true;
+    chatMessage.rankId = "donation";
     if (typeof(this.onMessage) === "function") {
         this.onMessage(this, chatMessage);
     }
