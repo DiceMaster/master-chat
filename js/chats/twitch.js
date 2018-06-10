@@ -107,22 +107,88 @@ twitch.prototype._connect = function () {
             console.log("Reconnecting to twitch.tv");
         });
 
-        this._client.on("chat", function (channel, user, message, self) {
-            this._processChatMessage(user, message);
+        this._client.on("chat", function (channel, userstate, message, self) {
+            this._processChatMessage(userstate, message);
         }.bind(this));
+
+        this._client.on("cheer", function (channel, userstate, message) {
+            this._processChatMessage(userstate, message);
+        }.bind(this));
+        
+        this._client.on("subscription", function (channel, user, method, message, userstate) {
+            this._processSubscribeMessage(userstate, message);
+        }.bind(this));
+
+        this._client.on("resub", function (channel, user, months, message, userstate, method) {
+            this._processSubscribeMessage(userstate, message);
+        }.bind(this));
+
         this._client.connect();
     } catch (err) {
         console.log("Error while initializing connection to twitch.tv. " + err.message + ".");
     }
 };
 
-twitch.prototype._processChatMessage = function(fromUser, message) {
+twitch.prototype._processChatMessage = function(userstate, message) {
     var chatMessage = new Message();
-    chatMessage.message =  this._htmlifyEmoticons(this._escapeHtml(this._processEmoticons(message, fromUser.emotes)));
-    chatMessage.nickname = fromUser["display-name"] || fromUser.username;
-    chatMessage.time = new Date();
+    chatMessage.message = this._htmlifyEmoticons(this._escapeHtml(this._processEmoticons(message, userstate.emotes)));
+
     chatMessage.isPersonal = message.toLowerCase().indexOf(this.channel.toLowerCase()) === 0 ||
                              message.toLowerCase().indexOf("@" + this.channel.toLowerCase()) === 0;
+
+    if (userstate.bits) {
+        chatMessage.message = chatMessage.message.replace(/(^|\s)cheer(\d+)(\s|$)/g, function(count) {
+            var color;
+            if (count >= 10000) {
+                color = "red";
+            } else if (count >= 5000) {
+                color = "blue";
+            } else if (count >= 1000) {
+                color = "green";
+            } else if (count >= 100) {
+                color = "purple";
+            } else {
+                color = "gray";
+            }
+                
+            return "<img src='static-cdn.jtvnw.net/bits/dark/animated/" + color + "/1'>";
+        });
+
+        chatMessage.isPersonal = true;
+        chatMessage.rankId = "donation";
+    }
+
+    chatMessage.nickname = userstate["display-name"] || userstate.username;
+    chatMessage.time = new Date();
+
+    if (typeof(this.onMessage) === "function") {
+        this.onMessage(this, chatMessage);
+    }
+};
+
+twitch.prototype._processSubscribeMessage = function(userstate, message) {
+    var chatMessage = new Message();
+    
+    chatMessage.nickname = userstate["display-name"] || userstate.username || userstate.login;
+
+    var sysMessage = userstate["system-msg"];
+    if (sysMessage) {
+        chatMessage.message = sysMessage.replace(/\\s/g, " ");
+        if (chatMessage.message.startsWith(chatMessage.nickname)) {
+            chatMessage.message = chatMessage.message.substring(chatMessage.nickname.length + 1);
+        }
+    } else {
+        chatMessage.message = "just subscribed!";
+    }
+    
+    if (message) {
+        var processedMessage = this._htmlifyEmoticons(this._escapeHtml(this._processEmoticons(message, userstate.emotes)));
+        chatMessage.message += " Message: " + processedMessage;
+    }
+    
+    chatMessage.rankId = "donation";
+    chatMessage.time = new Date();
+    chatMessage.isPersonal = true;
     if (typeof(this.onMessage) === "function") {
         this.onMessage(this, chatMessage);
     }
