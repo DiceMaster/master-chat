@@ -35,13 +35,6 @@ funstream.prototype.displayName = "funstream.tv";
 funstream.prototype.channel = null;
 
 funstream.prototype.chatLogoClass = "chat_sc2tv_logo";
-funstream.prototype.specialRanks = {
-    "funstream_prime": {
-        "exp": -1,
-        "icon": "img/sc2tv_prime.png",
-        "title": "PrimeTime"
-    }
-};
 
 funstream.prototype.stopChat = function () {
     this._stopChat();
@@ -227,7 +220,7 @@ funstream.prototype._processMessage = function(message) {
     var streamerName = this._streamerName || this.channel;
     var donate = message.type === "donate" || message.type === "fastdonate";
     if (donate) {
-        chatMessage.rankId = "funstream_prime";
+        chatMessage.rankId = "donation";
     }
     chatMessage.isPersonal = donate || (message.to !== null && message.to.name === streamerName);
     if (typeof(this.onMessage) === "function") {

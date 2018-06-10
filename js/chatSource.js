@@ -160,9 +160,13 @@ ChatSource.prototype._addMessage = function (message, rankId) {
 };
 
 ChatSource.prototype._getChannelSpecialRank = function(chatChannel, rankId) {
-    var channelRanks = chatChannel.specialRanks;
-    if (channelRanks === undefined) {
-        return undefined;
+    return this.specialRanks[rankId];
+};
+
+ChatSource.prototype.specialRanks = {
+    "donation": {
+        "exp": -1,
+        "icon": "img/donation.png",
+        "title": "Donation"
     }
-    return channelRanks[rankId];
 };
