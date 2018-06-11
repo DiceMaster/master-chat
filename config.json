@@ -3,7 +3,7 @@
   "channels": [
     {
       "channelId": "DiceMaster"
-      "type": "funstream",
+      "type": "peka2tv",
     },
     {
       "type": "gg",

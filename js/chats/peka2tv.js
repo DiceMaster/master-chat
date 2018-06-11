@@ -1,16 +1,14 @@
-class funstream {
+class peka2tv {
     constructor (channel, username, password) {
         this.channel = channel;
         this._username = username;
         this._password = password;
 
-        this.name = "funstream";
-        this.displayName = "funstream.tv";    
-        this.chatLogoClass = "chat_sc2tv_logo";
+        this.name = "peka2tv";
+        this.displayName = "peka2.tv";    
+        this.chatLogoClass = "chat_peka2tv_logo";
 
-        this._API_URL = "http://funstream.tv";
-        this._CHAT_URL = "http://funstream.tv:3811";
-        this._OAUTH_URL = "http://funstream.tv/oauth/";
+        this._API_URL = "https://peka2.tv";
         this._CHANNEL_RETRY_INTERVAL = 10000;
         this._CHAT_RELOAD_INTERVAL = 5000;
 
@@ -51,7 +49,7 @@ class funstream {
                     this._connect();
                 }.bind(this))
             .catch(function (err) {
-                    this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на sc2tv/funstream. " + err);
+                    this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на peka2.tv. " + err);
                 }.bind(this));
     }
 
@@ -169,7 +167,7 @@ class funstream {
     
     _connect () {
         var io = require('socket.io-client');
-        this._socket = io('ws://funstream.tv', {
+        this._socket = io('wss://chat.peka2.tv', {
             transports: ['websocket'],
             'reconnect': true,
             'reconnectionDelay': 500,
