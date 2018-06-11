@@ -1,7 +1,7 @@
-var RankedQueueUser = function () {
-
-};
-
-RankedQueueUser.prototype.username = null;
-RankedQueueUser.prototype.rankId = null;
-RankedQueueUser.prototype.time = null;
+class RankedQueueUser {
+    constructor () {
+        this.username = null;
+        this.rankId = null;
+        this.time = null;
+    }
+}

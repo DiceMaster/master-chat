@@ -1,16 +1,16 @@
-var Message = function () {
-
-};
-
-Message.prototype.id = null;
-Message.prototype.rankId = undefined;
-Message.prototype.rankIcon = null;
-Message.prototype.rankTitle = null;
-Message.prototype.chat = null;
-Message.prototype.chatLogo = null;
-Message.prototype.channel = null;
-Message.prototype.time = null;
-Message.prototype.nickname = null;
-Message.prototype.message = null;
-Message.prototype.isPersonal = false;
-Message.prototype.isSystem = false;
+class Message {
+    constructor () {
+        this.id = null;
+        this.rankId = undefined;
+        this.rankIcon = null;
+        this.rankTitle = null;
+        this.chat = null;
+        this.chatLogo = null;
+        this.channel = null;
+        this.time = null;
+        this.nickname = null;
+        this.message = null;
+        this.isPersonal = false;
+        this.isSystem = false;
+    }
+}
