@@ -31,7 +31,7 @@
             var win = nw.Window.get();
             win.on('new-win-policy', function(frame, url, policy){
                 policy.ignore();
-                gui.Shell.openExternal( url );
+                nw.Shell.openExternal( url );
             });
 
             var appLifeCycleService = new AppLifeCycleService();
@@ -45,13 +45,13 @@
 
             document.body.addEventListener('contextmenu', function(ev) {
                 ev.preventDefault();
-                var menu = new gui.Menu();
-                var queueItem = new gui.MenuItem({ label: 'Очередь' });
+                var menu = new nw.Menu();
+                var queueItem = new nw.MenuItem({ label: 'Очередь' });
                 queueItem.click = function() {
                     new RankedQueueViewController(rankedQueueService);
                 };
                 menu.append(queueItem);
-                var giveawayItem = new gui.MenuItem({ label: 'Розыгрыш' });
+                var giveawayItem = new nw.MenuItem({ label: 'Розыгрыш' });
                 giveawayItem.click = function() {
                     new GiveawayViewController(giveawayService);
                 };
