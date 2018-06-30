@@ -126,7 +126,7 @@ class twitch {
     
     _processChatMessage (userstate, message) {
         var chatMessage = new Message();
-        chatMessage.message = this._htmlifyEmoticons(this._escapeHtml(this._processEmoticons(message, userstate.emotes)));
+        chatMessage.message = this._processMessageText(message, userstate.emotes);
     
         chatMessage.isPersonal = message.toLowerCase().indexOf(this.channel.toLowerCase()) === 0 ||
                                  message.toLowerCase().indexOf("@" + this.channel.toLowerCase()) === 0;
@@ -177,7 +177,7 @@ class twitch {
         }
         
         if (message) {
-            var processedMessage = this._htmlifyEmoticons(this._escapeHtml(this._processEmoticons(message, userstate.emotes)));
+            var processedMessage = this._processMessageText(message, userstate.emotes);
             chatMessage.message += " Message: " + processedMessage;
         }
         
@@ -189,9 +189,9 @@ class twitch {
         }
     }
     
-    _processEmoticons (message, emotes) {
+    _processMessageText (message, emotes) {
         if (!emotes) {
-            return message;
+            return this._processLinks(message);
         }
         var placesToReplace = [];
         for (var emoteId in emotes) {
@@ -206,39 +206,64 @@ class twitch {
             }
         }
         placesToReplace.sort(function(first, second) {
-            return second.from - first.from;
+            return first.from - second.from;
         });
+
+        var parts = [];
+        var prevTo = 0;
         for (var iPlace = 0; iPlace < placesToReplace.length; ++iPlace) {
             var place = placesToReplace[iPlace];
+            if (place.from != prevTo) {
+                parts.push(this._processLinks(message.substring(prevTo, place.from)));
+            }
             var emoticonRegex = message.substring(place.from, place.to);
+
+            var emoticonHtml = "<img class='chat-smile'";
+
             var emoticonSize = this._emoticons[emoticonRegex];
             if (emoticonSize) {
-                message = message.substring(0, place.from) +
-                    "$emoticon#w" + emoticonSize.width + "#h" + emoticonSize.height + "#" + place.emoteId + "#" + emoticonRegex + "$" +
-                    message.substring(place.to);
-            } else {
-                message = message.substring(0, place.from) +
-                    "$emoticon#" + place.emoteId + "#" + emoticonRegex + "$" +
-                    message.substring(place.to);
+                emoticonHtml += " width='" + emoticonSize.width + "' height='" + emoticonSize.height + "'";
             }
+            emoticonHtml += " src='http://static-cdn.jtvnw.net/emoticons/v1/" + place.emoteId + "/1.0' title='" + emoticonRegex + "'>";
+
+            parts.push(emoticonHtml);
+
+            prevTo = place.to;
         }
-    
-        return message;
+
+        if (prevTo < message.length) {
+            parts.push(this._processLinks(message.substring(prevTo)));
+        }
+
+        return parts.join('');
     }
     
-    _htmlifyEmoticons (message) {
-        return message.replace(/\$emoticon(#w\d+)?(#h\d+)?#(\d+)#([^\$]+)\$/g, function (code, width, height, emoteId, emoteRegex) {
-            if (width === undefined || height === undefined) {
-                return "<img class='chat-smile' src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
-            } else {
-                return "<img class='chat-smile' width='" + width.substr(2) + "' height='" + height.substr(2) + "' src='http://static-cdn.jtvnw.net/emoticons/v1/" + emoteId + "/1.0' title='" + emoteRegex + "'>";
+    _processLinks (text) {
+        var linkRegex = /((https?:\/\/|www\.|[^\s:=]+@www\.).*?[a-z_\/0-9\-\#=&])(?=(\.|,|;|\?|\!)?("|'|«|»|\[|\s|\r|\n|$))/gm;
+        
+        var parts = [];
+
+        var match;
+        var lastEnd = 0;
+        while (match = linkRegex.exec(text)) {
+            if (match.index != lastEnd) {
+                parts.push(this._escapeHtml(text.substring(lastEnd, match.index)));
             }
-        });
+            parts.push("<a href='" + match[0] + "' target='_blank'>" + match[0] + "</a>");
+            lastEnd = linkRegex.lastIndex;
+        }
+
+        if (lastEnd < text.message) {
+            parts.push(this._escapeHtml(text.substring(lastEnd)));
+        }
+
+        return parts.join('');
     }
-    
+
     _escapeHtml (text) {
         return text.replace(/[\"&<>]/g, a => this._escapeCharMap[a]);
     }
+
     
     _fireErrorMessage (messageText) {
         var errorMessage = new Message();
