@@ -14,7 +14,6 @@ class twitch {
         this._IRC_URL = "irc.twitch.tv";
         this._SMILES_URL = "https://api.twitch.tv/kraken/chat/emoticons";
         this._EMOTICON_FILE_PATH = "twitch/smiles.json";
-        this._escapeCharMap = { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
 
         this._client = null;
         this._emoticons = null;
@@ -191,7 +190,7 @@ class twitch {
     
     _processMessageText (message, emotes) {
         if (!emotes) {
-            return this._processLinks(message);
+            return HtmlTools.anchorLinksEscapeHtml(message);
         }
         var placesToReplace = [];
         for (var emoteId in emotes) {
@@ -214,7 +213,7 @@ class twitch {
         for (var iPlace = 0; iPlace < placesToReplace.length; ++iPlace) {
             var place = placesToReplace[iPlace];
             if (place.from != prevTo) {
-                parts.push(this._processLinks(message.substring(prevTo, place.from)));
+                parts.push(HtmlTools.anchorLinksEscapeHtml(message.substring(prevTo, place.from)));
             }
             var emoticonRegex = message.substring(place.from, place.to);
 
@@ -232,38 +231,11 @@ class twitch {
         }
 
         if (prevTo < message.length) {
-            parts.push(this._processLinks(message.substring(prevTo)));
+            parts.push(HtmlTools.anchorLinksEscapeHtml(message.substring(prevTo)));
         }
 
         return parts.join('');
     }
-    
-    _processLinks (text) {
-        var linkRegex = /((https?:\/\/|www\.|[^\s:=]+@www\.).*?[a-z_\/0-9\-\#=&])(?=(\.|,|;|\?|\!)?("|'|«|»|\[|\s|\r|\n|$))/gm;
-        
-        var parts = [];
-
-        var match;
-        var lastEnd = 0;
-        while (match = linkRegex.exec(text)) {
-            if (match.index != lastEnd) {
-                parts.push(this._escapeHtml(text.substring(lastEnd, match.index)));
-            }
-            parts.push("<a href='" + match[0] + "' target='_blank'>" + match[0] + "</a>");
-            lastEnd = linkRegex.lastIndex;
-        }
-
-        if (lastEnd < text.message) {
-            parts.push(this._escapeHtml(text.substring(lastEnd)));
-        }
-
-        return parts.join('');
-    }
-
-    _escapeHtml (text) {
-        return text.replace(/[\"&<>]/g, a => this._escapeCharMap[a]);
-    }
-
     
     _fireErrorMessage (messageText) {
         var errorMessage = new Message();

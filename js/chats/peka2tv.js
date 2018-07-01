@@ -12,11 +12,7 @@ class peka2tv {
         this._CHANNEL_RETRY_INTERVAL = 10000;
         this._CHAT_RELOAD_INTERVAL = 5000;
 
-        this._URLPatternStr = '((?:(?:ht|f)tps?)(?:://))' + '(((?:(?:[a-z\u0430-\u0451\\d](?:[a-z\u0430-\u0451\\d-]*[a-z\u0430-\u0451\\d])*)\\.)+(?:[a-z]{2,}|\u0440\u0444)' + '|(?:(?:\\d{1,3}\\.){3}\\d{1,3}))' + '(:\\d+)?' + '(/[-a-z\u0430-\u0451\\d%_~\\+\\(\\):]*(?:[\\.,][-a-z\u0430-\u0451\\d%_~\\+\\(\\):]+)*)*' + '(\\?(?:&amp;|&quot;|&#039|[&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?' + '(#(?:&amp;|&quot;|&#039|[\*!\(\)\/&"\'.:;a-z\u0430-\u0451\\d%_~\\+=-])*)?)';
-        this._bbCodeURLPattern = new RegExp('\\[url\\]' + this._URLPatternStr + '\\[\/url\\]()', 'gi');
-        this._bbCodeURLWithTextPattern = new RegExp('\\[url=' + this._URLPatternStr + '\\]([\u0020-\u007E\u0400-\u045F\u0490\u0491\u0207\u0239\u2012\u2013\u2014]+?)\\[\/url\\]', 'gi');
         this._bbCodeBoldPattern = new RegExp('\\[b\\]([\\s\\S]+?)\\[/b\\]', 'gi');
-        this._escapeCharMap = { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
 
         this._channelId = null;
         this._socket = null;
@@ -226,33 +222,10 @@ class peka2tv {
         }
     }
     
-    _bbCodeToHtml (str) {
-        str = str.replace(this._bbCodeURLWithTextPattern, this._bbCodeURLToHtml);
-        str = str.replace(this._bbCodeURLPattern, this._bbCodeURLToHtml);
-        str = str.replace(this._bbCodeBoldPattern, '<strong>$1</strong>');
-        return str;
-    }
-    
-    _bbCodeURLToHtml (str, proto, url, host, port, path, query, fragment, text) {
-        url = url.replace(/:s:/gi, ':%73:');
-        if (!text) {
-            text = url;
-        }
-        if (text.length <= 60) {
-            return '<a rel="nofollow" href="' + proto + url + '" title="' + proto + url + '" target="_blank">' + text + '</a>';
-        } else {
-            length = text.length;
-            return '<a rel="nofollow" href="' + proto + url + '" target="_blank" title="' + proto + url + '">' + text.substring(0, 30) + '...' + text.substring(length - 20) + '</a>';
-        }
-    }
-    
-    _escapeHtml (text) {
-        return text.replace(/[\"&<>]/g, a => this._escapeCharMap[a]);
-    }
-    
     _htmlify (message) {
-        message = this._escapeHtml(message);
-        message = this._bbCodeToHtml(message);
+        message = HtmlTools.anchorLinksEscapeHtml(message);
+        message = message.replace(this._bbCodeBoldPattern, '<strong>$1</strong>');
+
         for (var iSmile = 0; iSmile < this._smiles.length; ++iSmile) {
             var smile = this._smiles[iSmile];
             message = message.replace(

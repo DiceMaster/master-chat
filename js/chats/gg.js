@@ -357,49 +357,7 @@ class gg {
     
     _htmlify (message, isPremium) {
         message = message.replace(/[^\u0000-\u00FF\u0400-\uFFFF]+/g, "");
-        if (message.indexOf(">http") != -1) {
-            var shorter = />(?:(http|https|ftp):\/\/)?(?:((?:[^\W\s]|\.|-|[:]{1})+)@{1})?((?:www.)?(?:[^\W\s]|\.|-)+[\.][^\W\s]{2,4}|localhost(?=\/)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d*))?([\/]?[^\s\?]*[\/]{1})*(?:\/?([^\s\n\?\[\]\{\}\#]*(?:(?=\.)){1}|[^\s\n\?\[\]\{\}\.\#]*)?([\.]{1}[^\s\?\#]*)?)?(?:\?{1}([^\s\n\#\[\]]*))?([\#][^\s\n]*)?</g;
-            var replaceFunc = function(url, protocol, userinfo, host, port, path, filename, ext, query, fragment) {
-                var limit = 25;
-                var show_www = false;
-                var domain = show_www ? host : host.replace(/www\./gi, "");
-                var p = decodeURI(path || "/");
-                var e = ext || "";
-                var f = decodeURI(filename || "") + e;
-                var q = decodeURI(query ? "?" + query : "");
-                var visibleUrl = domain + p + f + q;
-                if (visibleUrl.length > limit && q.length > 1) {
-                    var ql = limit - (domain + p + f).length - 3;
-                    if (ql > 0) {
-                        q = q.substr(0, ql) + "..."
-                    } else {
-                        q = "?..."
-                    }
-                    visibleUrl = domain + p + f + q
-                }
-                if (visibleUrl.length > limit && p.length > 1) {
-                    var pl = limit - (domain + f + q).length - 3;
-                    if (pl > 0) {
-                        p = p.substr(0, Math.round(pl / 2)) + "..." + p.substr(p.length - Math.round(pl / 2))
-                    } else {
-                        p = "/.../"
-                    }
-                    visibleUrl = domain + p + f + q
-                }
-                if (visibleUrl.length > limit) {
-                    var fl = limit - (domain + q).length - 4;
-                    var pf = (path || "/") + f;
-                    if (fl > 0) {
-                        f = "/..." + pf.substr(pf.length - fl)
-                    } else {
-                        f = "/..." + pf.substr(pf.length - 10)
-                    }
-                    visibleUrl = domain + f + q
-                }
-                return ' title="' + url.substring(1, url.length - 1) + '">' + visibleUrl + "<"
-            };
-            message = message.replace(shorter, replaceFunc);
-        }
+        message = HtmlTools.anchorLinksEscapeHtml(message);
     
         for (var i = 0, len = this._allSmiles.length; i < len; ++i) {
             if (message.indexOf(":" + this._allSmiles[i].name + ":") != -1) {
