@@ -9,9 +9,8 @@ class gg {
         this.displayName = "GoodGame.ru";
         this.chatLogoClass = "chat_goodgame_logo";
 
-        this._CHAT_URL = "http://chat.goodgame.ru:8081/chat/";
+        this._CHAT_URL = "wss://chat-2.goodgame.ru/chat2/";
         this._LOGIN_URL = " https://goodgame.ru/ajax/chatlogin/";
-        this._CHANNEL_URL = "http://goodgame.ru/chat2/";
         this._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
         this._SMILES_DEFINITION_URL = "http://goodgame.ru/js/minified/global.js";
         this._SMILES_COMMON_CSS_URL = "http://goodgame.ru/css/compiled/common_smiles.css";
@@ -237,22 +236,22 @@ class gg {
     }
     
     _connect () {
-        this._socket = new SockJS(this._CHAT_URL);
-        this._socket.onclose = function() {
+        this._socket = new WebSocket(this._CHAT_URL);
+
+        this._socket.addEventListener('open', function (event) {
+            console.log('Connected to goodgame.ru');
+        }.bind(this));
+        this._socket.addEventListener('message', function (event) {
+            this._processWebSocketMessage(JSON.parse(event.data));
+        }.bind(this));
+        this._socket.addEventListener('error', function (err) {
+            console.log(err);
+        }.bind(this));
+        this._socket.addEventListener('close', function () {
             console.log("GG chat closed. Reconnecting.");
             this._socket = null;
             setTimeout(this._connect.bind(this), this._RETRY_INTERVAL);
-        }.bind(this);
-        this._socket.onmessage = function(evt) {
-            if (!this._socket) {
-                console.log("Received a message while _socket is null. " + JSON.stringify(evt));
-                return;
-            }
-            this._processWebSocketMessage(JSON.parse(evt.data));
-        }.bind(this);
-        this._socket.onerror = function(err) {
-            console.log(err);
-        }.bind(this);
+        }.bind(this));
     }
     
     _processWebSocketMessage (message) {
@@ -264,13 +263,11 @@ class gg {
                 var authMessage = {
                     "type": "auth",
                     "data": {
-                        "site_id": 1,
                         "user_id": this._userId || 0,
                         "token": this._token || ""
                     }
                 };
-                var messageString = JSON.stringify(authMessage);
-                this._socket.send(messageString);
+                this._socket.send(JSON.stringify(authMessage));
                 break;
             case "success_auth":
                 var unjoinMessage = {
@@ -284,8 +281,7 @@ class gg {
                     "type": "join",
                     "data": {
                         "channel_id": this._channelId,
-                        "hidden": false,
-                        "mobile": false
+                        "hidden": 0
                     }
                 };
                 this._socket.send(JSON.stringify(joinMessage));
@@ -294,7 +290,8 @@ class gg {
                 var channelHistoryMessage = {
                     "type": "get_channel_history",
                     "data": {
-                        "channel_id": this._channelId
+                        "channel_id": this._channelId,
+                        "from": 0
                     }
                 };
                 this._socket.send(JSON.stringify(channelHistoryMessage));
