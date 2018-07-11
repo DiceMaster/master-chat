@@ -15,7 +15,7 @@ class CommandController {
         }
         var twoHoursAgo = new Date();
         twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
-        if (message.time < twoHoursAgo) {
+        if (message.time && message.time < twoHoursAgo) {
             return;
         }
         if (message.message.indexOf("!exp") === 0) {

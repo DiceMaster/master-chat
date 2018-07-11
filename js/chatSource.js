@@ -75,6 +75,10 @@ class ChatSource {
     }
     
     _isMessageOutdated  (message) {
+        if (!message.time) {
+            return false;
+        }
+
         for (var iMessage = this._messages.length - 1; iMessage >= 0; --iMessage) {
             if (message.chat !== this._messages[iMessage].chat) {
                 continue;
@@ -123,9 +127,11 @@ class ChatSource {
         }
     
         var lastMessageTime = this._configSource.getChannelLastMessageTime(message.chat, message.channel);
-        message.isFresh = message.time > lastMessageTime;
+        message.isFresh = !message.time || message.time > lastMessageTime;
         if (message.isFresh) {
-            this._configSource.setChannelLastMessageTime(message.chat, message.channel, message.time);
+            if (message.time) {
+                this._configSource.setChannelLastMessageTime(message.chat, message.channel, message.time);
+            }
             this._rankController.processMessage(message, {}, function (isRankUp, user) {
                 if (isRankUp) {
                     this._rankUp(user);
