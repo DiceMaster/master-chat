@@ -204,37 +204,6 @@ class gg {
         }.bind(this));
     }
     
-    _loadSmileStylesAndDefinitions (definitionUrl, globalCssUrl, channelsCssUrl, onFound) {
-        $.when($.get(definitionUrl),
-               $.get(globalCssUrl),
-               $.get(channelsCssUrl)
-        ).done(function(smilesDefinition, globalCss, channelsCss) {
-                if (this._isStopped) {
-                    return;
-                }
-                var smileDefinitionMatch = smilesDefinition[0].match(/var\s+Global\s*=\s*(\{[\s\S]+});/);
-                if (smileDefinitionMatch === null) {
-                    if (typeof(onLoad) === "function") {
-                        onLoad(undefined);
-                    }
-                    return;
-                }
-                var ggSmiles = eval("(" + smileDefinitionMatch[1] + ")");
-                var combinedCss = globalCss + "\n" + channelsCss;
-                if (typeof(onFound) === "function") {
-                    onFound(ggSmiles, combinedCss);
-                }
-            }.bind(this)
-        ).fail(function() {
-                if (this._isStopped) {
-                    return;
-                }
-                if (typeof(onFound) === "function") {
-                    onFound(undefined, undefined);
-                }
-            });
-    }
-    
     _connect () {
         this._socket = new WebSocket(this._CHAT_URL);
 

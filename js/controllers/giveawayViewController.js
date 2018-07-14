@@ -4,18 +4,22 @@ class GiveawayViewController {
         this._giveawayService.onstatechange = this._onstatechange.bind(this);
         this._giveawayService.oncountdown = this._oncountdown.bind(this);
         this._giveawayService.onnewparticipant = this._onnewparticipant.bind(this);
-        this._window = nw.Window.open('giveaway.html', {
+        
+        this._parser = new DOMParser();
+
+        nw.Window.open('giveaway.html', {
             "position": 'center',
-            "toolbar": false,
             "width": 400,
-            "height": 700,
-            "always-on-top": true,
-            "focus": true
-        });
-        this._window.on ('loaded', function(){
-            this._onstatechange(this._giveawayService, this._giveawayService.getState());
-            this._window.window.$("#giveaway-start").on("click", this._start.bind(this));
-            this._window.window.$("#giveaway-restart").on("click", this._giveawayService.finishPoll.bind(this._giveawayService));
+            "height": 700
+        }, function (window) {
+            this._window = window;
+
+            this._window.on ('loaded', function(){
+                this._onstatechange(this._giveawayService, this._giveawayService.getState());
+                let doc = this._window.window.document;
+                doc.querySelector('#giveaway-start').addEventListener('click', this._start.bind(this));
+                doc.querySelector('#giveaway-restart').addEventListener('click', this._giveawayService.finishPoll.bind(this._giveawayService));
+            }.bind(this));
         }.bind(this));
     }
 
@@ -28,43 +32,66 @@ class GiveawayViewController {
     }
     
     _onstatechange (giveawayService, newState) {
-        this._window.window.$("#giveaway-settings").toggle(newState === GiveawayService.State.None);
+        let doc = this._window.window.document;
+        
+        let settingsNode = doc.querySelector('#giveaway-settings');
+        settingsNode.style.display = newState === GiveawayService.State.None ? '' : 'none';
+        
         if (newState === GiveawayService.State.Gather) {
-            this._window.window.$("#giveaway-participants").empty();
+            doc.querySelector('#giveaway-participants').innerHTML = '';
         }
-        this._window.window.$("#giveaway-list").toggle(newState === GiveawayService.State.Gather);
+        
+        let listNode = doc.querySelector('#giveaway-list');
+        listNode.style.display = newState === GiveawayService.State.Gather ? '' : 'none';
+
         if (newState === GiveawayService.State.Winners) {
-            var container = this._window.window.$("#giveaway-winners-list");
-            container.empty();
-            var winners = this._giveawayService.getWinners();
-            this._window.window.$("#giveaway-winners-title").text(winners.length === 1 ? "Победитель:" : "Победители:");
+            let container =  doc.querySelector('#giveaway-winners-list');
+            container.innerHTML = '';
+        
+            let winners = this._giveawayService.getWinners();
+        
+            doc.querySelector('#giveaway-winners-title').textContent = winners.length === 1 ? "Победитель:" : "Победители:";
+        
             for (var iWinner = 0; iWinner < winners.length; iWinner++) {
                 this._addUser(winners[iWinner], container);
             }
         }
-        this._window.window.$("#giveaway-winners").toggle(newState === GiveawayService.State.Winners);
+        
+        let winnersNode = doc.querySelector('#giveaway-winners');
+        winnersNode.style.display = newState === GiveawayService.State.Winners ? '' : 'none';
     }
     
     _oncountdown (giveawayService, remaining) {
-        this._window.window.$("#giveaway-time-value").text(remaining.toString());
+        let doc = this._window.window.document;
+        doc.querySelector('#giveaway-time-value').textContent = remaining.toString();
     }
     
     _onnewparticipant (giveawayService, participant) {
-        this._addUser(participant, this._window.window.$("#giveaway-participants"));
-        this._window.window.$("#giveaway-participants-count-value").text(giveawayService.getParticipantsCount().toString());
+        let doc = this._window.window.document;
+
+        let container = doc.querySelector('#giveaway-participants');
+        this._addUser(participant, container);
+
+        let participantsCountNode = doc.querySelector('#giveaway-participants-count-value');
+        participantsCountNode.textContent = giveawayService.getParticipantsCount().toString();
     }
     
     _start () {
-        var keyword = this._window.window.$("#giveaway-keyword").val();
-        var duration = this._window.window.$("#giveaway-duration").val();
-        var winners = this._window.window.$("#giveaway-winners-count").val();
+        let doc = this._window.window.document;
+
+        let keyword = doc.querySelector('#giveaway-keyword').value;
+        let duration = doc.querySelector('#giveaway-duration').value;
+        let winners = doc.querySelector('#giveaway-winners-count').value;
+        
         this._giveawayService.startPoll(keyword, duration, winners);
     }
     
     _addUser (user, container) {
-        var userDivString = "<div class='giveaway-user'><div class='chat_logo " + user.chatLogo + "'></div>" +
+        let userDivString = "<div class='giveaway-user'><div class='chat_logo " + user.chatLogo + "'></div>" +
             "<img width=20 height=20 class='chat_logo'src='" + user.rankIcon + "'>" +
             "<span class='nick username-normal'>" + user.name + "</span></div>";
-        container.append(this._window.window.$(userDivString));
+
+        let node = this._parser.parseFromString(userDivString, 'text/html').body.firstChild;
+        container.appendChild(node);
     }
 }

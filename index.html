@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="css/default.css">
-    <script src="js/vendor/jquery-2.1.4.min.js"></script>
     <script src="js/model/channel.js"></script>
     <script src="js/model/message.js"></script>
     <script src="js/model/user.js"></script>
@@ -26,41 +25,7 @@
     <script src="js/giveawayService.js"></script>
     <script src="js/controllers/giveawayViewController.js"></script>
     <script src="js/commandController.js"></script>
-    <script>
-        $(function () {
-            var win = nw.Window.get();
-            win.on('new-win-policy', function(frame, url, policy){
-                policy.ignore();
-                nw.Shell.openExternal( url );
-            });
-
-            var appLifeCycleService = new AppLifeCycleService();
-            var configSource = new ConfigSource("config.json", appLifeCycleService);
-            var rankController = new RankController(configSource);
-            var chatSource = new ChatSource(configSource, rankController);
-            var rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
-            var giveawayService = new GiveawayService(rankController, chatSource);
-            new CommandController(chatSource, rankController, rankedQueueService);
-            new ChatWindowViewController($("#message_list"), chatSource, configSource);
-
-            document.body.addEventListener('contextmenu', function(ev) {
-                ev.preventDefault();
-                var menu = new nw.Menu();
-                var queueItem = new nw.MenuItem({ label: 'Очередь' });
-                queueItem.click = function() {
-                    new RankedQueueViewController(rankedQueueService);
-                };
-                menu.append(queueItem);
-                var giveawayItem = new nw.MenuItem({ label: 'Розыгрыш' });
-                giveawayItem.click = function() {
-                    new GiveawayViewController(giveawayService);
-                };
-                menu.append(giveawayItem);
-                menu.popup(ev.x, ev.y);
-                return false;
-            });
-        });
-    </script>
+    
     <title>MasterChat</title>
 </head>
 <body>
@@ -68,5 +33,40 @@
     <div id="message_list" class="big-smiles animated-smiles">
     </div>
 </div>
+<script type="module">
+    let win = nw.Window.get();
+    win.on('new-win-policy', function(frame, url, policy){
+        policy.ignore();
+        nw.Shell.openExternal( url );
+    });
+    win.setAlwaysOnTop(true);
+
+    let appLifeCycleService = new AppLifeCycleService();
+    let configSource = new ConfigSource("config.json", appLifeCycleService);
+    let rankController = new RankController(configSource);
+    let chatSource = new ChatSource(configSource, rankController);
+    let rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
+    let giveawayService = new GiveawayService(rankController, chatSource);
+    new CommandController(chatSource, rankController, rankedQueueService);
+    let messageList = document.querySelector('#message_list');
+    new ChatWindowViewController(messageList, chatSource, configSource);
+
+    document.body.addEventListener('contextmenu', function(ev) {
+        ev.preventDefault();
+        let menu = new nw.Menu();
+        let queueItem = new nw.MenuItem({ label: 'Очередь' });
+        queueItem.click = function() {
+            new RankedQueueViewController(rankedQueueService);
+        };
+        menu.append(queueItem);
+        let giveawayItem = new nw.MenuItem({ label: 'Розыгрыш' });
+        giveawayItem.click = function() {
+            new GiveawayViewController(giveawayService);
+        };
+        menu.append(giveawayItem);
+        menu.popup(ev.x, ev.y);
+        return false;
+    });
+</script>
 </body>
 </html>

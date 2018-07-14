@@ -2,7 +2,6 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <script src="js/vendor/jquery-2.1.4.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/reset.css">
     <link rel="stylesheet" type="text/css" href="css/rankedQueue.css">
     <title>Очередь</title>
@@ -38,19 +37,32 @@
     </div>
 </div>
 <script>
-    $(function() {
-        $('.tabs .tab-links a').on('click', function(e)  {
-            var currentAttrValue = $(this).attr('href');
-
-            // Show/Hide Tabs
-            $('.tabs ' + currentAttrValue).show().siblings().hide();
+    let links = document.querySelectorAll('.tabs .tab-links a');
+    for (let link of links) {
+        link.addEventListener('click', function(e)  {
+            e.preventDefault();
+            
+            let tab = document.querySelector('.tabs ' + link.getAttribute('href'));
+            tab.style.display = '';
+            
+            for (let otherTab of tab.parentNode.children) {
+                if (otherTab === tab) {
+                    continue;
+                }
+                otherTab.style.display = 'none';
+            }
 
             // Change/remove current tab to active
-            $(this).parent('li').addClass('active').siblings().removeClass('active');
+            link.parentNode.classList.add('active');
 
-            e.preventDefault();
+            for (let otherItem of link.parentNode.parentNode.children) {
+                if (otherItem === link.parentNode) {
+                    continue;
+                }
+                otherItem.classList.remove('active');
+            }
         });
-    });
+    }
 </script>
 </body>
 </html>

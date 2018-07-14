@@ -9,6 +9,8 @@ class ChatWindowViewController {
         this._chatSource = chatSource;
         this._chatSource.addMessageListener(this._onmessage.bind(this));
 
+        this._parser = new DOMParser();
+
         this._autoScrollThreshold  = 50;
 
         this._registerHotkeys();
@@ -19,7 +21,7 @@ class ChatWindowViewController {
     }
     
     _registerHotkeys () {
-        var option = {
+        let option = {
             key : "Ctrl+Shift+Up",
             active : function() {
                 console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -30,16 +32,16 @@ class ChatWindowViewController {
             }
         };
     
-        var shortcut = new nw.Shortcut(option);
+        let shortcut = new nw.Shortcut(option);
         nw.App.registerGlobalHotKey(shortcut);
     }
     
     _applyThemeStyle (theme) {
-        var style = theme.getStyle();
+        let style = theme.getStyle();
         if (!style) {
             return;
         }
-        if (this._styleElement === null) {
+        if (!this._styleElement) {
             this._styleElement = document.createElement("style");
             this._styleElement.setAttribute("type", "text/css");
             document.getElementsByTagName('head')[0].appendChild(this._styleElement);
@@ -48,13 +50,17 @@ class ChatWindowViewController {
     }
     
     _onmessage (message) {
-        var isScrollAtBottom = this._view.scrollTop() + this._view.innerHeight() >= this._view.prop("scrollHeight") - this._autoScrollThreshold;
+        let isScrollAtBottom = this._view.scrollTop + this._view.clientHeight >= this._view.scrollHeight - this._autoScrollThreshold;
     
-        var messageHtml = this._theme.getMessageHtml(message);
-        this._view.append($(messageHtml));
+        let messageHtml = this._theme.getMessageHtml(message).trim();
+        let nodes = this._parser.parseFromString(messageHtml, 'text/html').body.childNodes;
+
+        for (let node of nodes) {
+            this._view.appendChild(node);
+        }
     
         if (isScrollAtBottom) {
-            this._view.scrollTop(this._view.prop("scrollHeight"));
+            this._view.scrollTop = this._view.scrollHeight;
         }
     }
 }

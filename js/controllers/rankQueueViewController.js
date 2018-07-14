@@ -4,7 +4,6 @@ class RankedQueueViewController {
         this._rankerQueueService.onupdate = this._onRankedQueueServiceUpdate.bind(this);
         this._window = nw.Window.open('rankedQueue.html', {
             position: 'center',
-            toolbar: false,
             width: 400,
             height: 400
         });
