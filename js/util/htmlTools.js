@@ -1,4 +1,4 @@
-class HtmlTools {
+export class HtmlTools {
     static escapeHtml (text) {
         return text.replace(/[\"&<>]/g, a => HtmlTools._escapeCharMap[a]);
     }

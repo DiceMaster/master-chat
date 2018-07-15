@@ -1,4 +1,4 @@
-class Message {
+export class Message {
     constructor () {
         this.id = null;
         this.rankId = undefined;

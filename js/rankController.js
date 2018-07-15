@@ -1,4 +1,6 @@
-class RankController {
+import {User} from '/js/model/user.js';
+
+export class RankController {
     constructor (configSource) {
         this._configSource = configSource;
         this._rankUpHandlers = [];

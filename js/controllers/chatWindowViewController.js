@@ -1,4 +1,7 @@
-class ChatWindowViewController {
+import {Theme} from '/js/theme.js';
+
+
+export class ChatWindowViewController {
     constructor (view, chatSource, configSource) {
         this._view = view;
         this._configSource = configSource;

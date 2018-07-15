@@ -1,4 +1,4 @@
-class AppLifeCycleService {
+export class AppLifeCycleService {
     constructor () {
         this._onCloseListeners = [];
         this._win = nw.Window.get();

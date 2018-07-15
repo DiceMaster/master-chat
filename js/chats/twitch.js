@@ -1,4 +1,7 @@
-class twitch {
+import {Message} from '/js/model/message.js';
+import {HtmlTools} from '/js/util/htmlTools.js';
+
+export class twitch {
     constructor (channel, username, password) {
         this.channel = channel;
         this._username = username;

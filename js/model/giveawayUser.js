@@ -1,4 +1,4 @@
-class GiveawayUser {
+export class GiveawayUser {
     constructor () {
         this.name = null;
         this.rankId = undefined;

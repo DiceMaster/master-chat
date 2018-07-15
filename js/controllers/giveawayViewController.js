@@ -1,4 +1,4 @@
-class GiveawayViewController {
+export class GiveawayViewController {
     constructor (giveawayService) {
         this._giveawayService = giveawayService;
         this._giveawayService.onstatechange = this._onstatechange.bind(this);

@@ -1,4 +1,4 @@
-class RankedQueueViewController {
+export class RankedQueueViewController {
     constructor (rankerQueueService) {
         this._rankerQueueService = rankerQueueService;
         this._rankerQueueService.onupdate = this._onRankedQueueServiceUpdate.bind(this);

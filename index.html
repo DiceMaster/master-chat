@@ -2,29 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="css/default.css">
-    <script src="js/model/channel.js"></script>
-    <script src="js/model/message.js"></script>
-    <script src="js/model/user.js"></script>
-    <script src="js/model/giveawayUser.js"></script>
-    <script src="js/model/rankedQueueUser.js"></script>
-    <script src="js/util/htmlTools.js"></script>
-    <script src="js/chats/peka2tv.js"></script>
-    <script src="js/chats/gg.js"></script>
-    <script src="js/chats/twitch.js"></script>
-    <script src="js/chats/youtube.js"></script>
-    <script src="js/rankController.js"></script>
-    <script src="js/appLifeCycleService.js"></script>
-    <script src="js/configSource.js"></script>
-    <script src="js/chatSource.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="js/controllers/chatWindowViewController.js"></script>
-    <script src="js/rankedQueueService.js"></script>
-    <script src="js/controllers/rankQueueViewController.js"></script>
-    <script src="js/giveawayService.js"></script>
-    <script src="js/controllers/giveawayViewController.js"></script>
-    <script src="js/commandController.js"></script>
-    
+    <link rel="stylesheet" type="text/css" href="css/default.css">    
     <title>MasterChat</title>
 </head>
 <body>
@@ -33,6 +11,17 @@
     </div>
 </div>
 <script type="module">
+    import {AppLifeCycleService} from '/js/appLifeCycleService.js';
+    import {ConfigSource} from '/js/configSource.js';
+    import {RankController} from '/js/rankController.js';
+    import {ChatSource} from '/js/chatSource.js';
+    import {ChatWindowViewController} from '/js/controllers/chatWindowViewController.js';
+    import {CommandController} from '/js/commandController.js';
+    import {RankedQueueService} from '/js/rankedQueueService.js';
+    import {GiveawayService} from '/js/giveawayService.js';
+    import {RankedQueueViewController} from '/js/controllers/rankQueueViewController.js';
+    import {GiveawayViewController} from '/js/controllers/giveawayViewController.js';
+
     let win = nw.Window.get();
     win.on('new-win-policy', function(frame, url, policy){
         policy.ignore();

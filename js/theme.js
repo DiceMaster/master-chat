@@ -1,4 +1,4 @@
-class Theme {
+export class Theme {
     constructor (name) {
         this.name = name;
         this._loadTheme();

@@ -1,4 +1,4 @@
-class User {
+export class User {
     constructor () {
         this.name = null;
         this.exp = 0;

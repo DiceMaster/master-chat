@@ -1,9 +1,22 @@
-class ChatSource {
+import {Message} from '/js/model/message.js';
+import {peka2tv} from '/js/chats/peka2tv.js';
+import {gg} from '/js/chats/gg.js';
+import {twitch} from '/js/chats/twitch.js';
+import {youtube} from '/js/chats/youtube.js';
+
+export class ChatSource {
     constructor (configSource, rankController) {
         this._configSource = configSource;
         this._rankController = rankController;
 
         this._chats = {};
+        this._chatAliases = {
+            "peka2tv": peka2tv,
+            "gg": gg,
+            "twitch": twitch,
+            "youtube": youtube
+        };
+
         this._messages = [];
         this._messageQueue = [];
         this._listeners = [];
@@ -51,17 +64,30 @@ class ChatSource {
     }
     
     _initializeChats  () {
-        var channels = this._configSource.getChannels();
-        for (var iChat = 0; iChat < channels.length; ++iChat) {
-            var chatDesc = channels[iChat];
-            var parameters = "'" + chatDesc.channelId + "'";
+        let channels = this._configSource.getChannels();
+        for (let iChat = 0; iChat < channels.length; ++iChat) {
+            let chatDesc = channels[iChat];
+
+            var parameters = [chatDesc.channelId];
+
             if (typeof chatDesc.username === "string") {
-                parameters += ", '" + chatDesc.username + "'";
+                parameters.push(chatDesc.username);
+
+                if (typeof chatDesc.password === "string") {
+                    parameters.push(chatDesc.password);
+                }
             }
-            if (typeof chatDesc.password === "string") {
-                parameters += ", '" + chatDesc.password + "'";
+
+            let ChatClass = this._chatAliases[chatDesc.type];
+            if (!ChatClass) {
+                var errorMessage = new Message();
+                errorMessage.message = "Unexpected chat type '" + chatDesc.type + "'.";
+                errorMessage.isError = true;
+                this._addMessage(errorMessage);
+                continue;
             }
-            var chat = eval("new " + chatDesc.type + "(" + parameters + ")");
+            
+            let chat = new (Function.prototype.bind.apply(ChatClass, [null].concat(parameters)));
             chat.onMessage = this._onMessage.bind(this);
             this._chats[this._fullChannelId(chat.name, chatDesc.channelId)] = chat;
         }

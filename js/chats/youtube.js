@@ -1,4 +1,6 @@
-class youtube {
+import {Message} from '/js/model/message.js';
+
+export class youtube {
     constructor (channel, username, password) {
         this.channel = channel;
         this._username = username;

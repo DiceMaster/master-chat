@@ -1,4 +1,6 @@
-class GiveawayService {
+import {GiveawayUser} from '/js/model/giveawayUser.js';
+
+export class GiveawayService {
     constructor (rankController, chatSource) {
         this._rankController = rankController;
         this._chatSource = chatSource;

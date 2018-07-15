@@ -1,4 +1,4 @@
-class CommandController {
+export class CommandController {
     constructor (chatSource, rankController, rankedQueueService) {
         this._chatSource = chatSource;
         this._rankController = rankController;

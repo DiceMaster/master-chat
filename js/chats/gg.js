@@ -1,4 +1,7 @@
-class gg {
+import {Message} from '/js/model/message.js';
+import {HtmlTools} from '/js/util/htmlTools.js';
+
+export class gg {
     constructor (channel, username, password) {
         this.channel = channel;
         this._username = username;

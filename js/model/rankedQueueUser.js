@@ -1,4 +1,4 @@
-class RankedQueueUser {
+export class RankedQueueUser {
     constructor () {
         this.username = null;
         this.rankId = null;

@@ -1,4 +1,7 @@
-class peka2tv {
+import {Message} from '/js/model/message.js';
+import {HtmlTools} from '/js/util/htmlTools.js';
+
+export class peka2tv {
     constructor (channel, username, password) {
         this.channel = channel;
         this._username = username;
