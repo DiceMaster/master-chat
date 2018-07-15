@@ -15,7 +15,18 @@ class ChatSource {
             }
         };
 
-        this._initialize();
+        this._rankController.onLoad(function(err) {
+            if (err) {
+                console.log(err);
+                var errorMessage = new Message();
+                errorMessage.message = 'Failed to initialize the database.';
+                errorMessage.isError = true;
+                this._addMessage(errorMessage);
+                return;
+            }
+
+            this._initializeChats();
+        }.bind(this));
     }
 
     addMessageListener (listener) {
@@ -39,7 +50,7 @@ class ChatSource {
         }
     }
     
-    _initialize  () {
+    _initializeChats  () {
         var channels = this._configSource.getChannels();
         for (var iChat = 0; iChat < channels.length; ++iChat) {
             var chatDesc = channels[iChat];
@@ -159,11 +170,17 @@ class ChatSource {
         if (rank === undefined) {
             rank = this._specialRanks[rankId];
         }
-        message.rankId = rankId;
-        message.rankIcon = rank.icon;
-        message.rankTitle = rank.title;
+
+        if (rank) {
+            message.rankId = rankId;
+            message.rankIcon = rank.icon;
+            message.rankTitle = rank.title;    
+        }
     
-        message.chatLogo = chat.chatLogoClass;
+        if (chat) {
+            message.chatLogo = chat.chatLogoClass;
+        }
+
         this._messages.push(message);
     
         this._notifyListeners(message);

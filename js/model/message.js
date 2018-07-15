@@ -12,5 +12,6 @@ class Message {
         this.message = null;
         this.isPersonal = false;
         this.isSystem = false;
+        this.isError = false;
     }
 }

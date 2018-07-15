@@ -3,16 +3,47 @@ class RankController {
         this._configSource = configSource;
         this._rankUpHandlers = [];
         this._sortedRanks = this._sortedRanks(this._configSource.getRanks());
+
+        this._onLoadHandler = null;
+        this._loaded = false;
+        this._loadError = null;
+
         var Datastore = require('nedb');
         this._db = new Datastore({
-            filename: 'ranks.db',
-            autoload: true
+            filename: 'ranks.db'
         });
-        this._db.ensureIndex({ fieldName: 'name', unique: true }, function (err) {
+        this._db.loadDatabase(function (err) {
             if (err) {
-                alert("Can't create indexes");
+                this._loaded = true;
+                this._loadError = err;
+                if (typeof this._onLoadHandler === 'function') {
+                    this._onLoadHandler(err);
+                }
+                return;
             }
-        });
+
+            this._db.ensureIndex({ fieldName: 'name', unique: true }, function (err) {
+                this._loaded = true;
+                this._loadError = err;
+                if (typeof this._onLoadHandler === 'function') {
+                    this._onLoadHandler(err);
+                }
+            }.bind(this));    
+        }.bind(this));
+    }
+
+    onLoad (handler) {
+        if (typeof handler !== 'function') {
+            return;
+        }
+
+        this._onLoadHandler = handler;
+
+        if (this._loaded) {
+            setTimeout(function() {
+                this._onLoadHandler(this._loadError);
+            }.bind(this));
+        }
     }
 
     processMessage (message, options, callback) {
