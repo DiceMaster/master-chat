@@ -1,6 +1,6 @@
 import {Channel} from '/js/model/channel.js';
 
-export class ConfigSource {
+export class ConfigService {
     constructor (filename, appLifeCycleService) {
         this._configPath = filename;
         this._fs = require("fs");

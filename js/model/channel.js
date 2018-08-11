@@ -3,5 +3,5 @@ export class Channel {
         this.type = type;
         this.channelId = channelId;
         this.lastMessageTime = new Date(0);
-    };
+    }
 } 

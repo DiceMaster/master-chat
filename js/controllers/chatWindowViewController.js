@@ -2,15 +2,15 @@ import {Theme} from '/js/theme.js';
 
 
 export class ChatWindowViewController {
-    constructor (view, chatSource, configSource) {
+    constructor (view, messageService, configService) {
         this._view = view;
-        this._configSource = configSource;
+        this._configService = configService;
         this._styleElement = null;
-        this._theme = this._loadTheme(this._configSource.getTheme());
+        this._theme = this._loadTheme(this._configService.getTheme());
         this._applyThemeStyle(this._theme);
 
-        this._chatSource = chatSource;
-        this._chatSource.addMessageListener(this._onmessage.bind(this));
+        this._messageService = messageService;
+        this._messageService.addMessageListener(this._onmessage.bind(this));
 
         this._parser = new DOMParser();
 

@@ -11,14 +11,15 @@
     </div>
 </div>
 <script type="module">
-    import {AppLifeCycleService} from '/js/appLifeCycleService.js';
-    import {ConfigSource} from '/js/configSource.js';
+    import {AppLifeCycleService} from '/js/services/appLifeCycleService.js';
+    import {ConfigService} from '/js/services/configService.js';
     import {RankController} from '/js/rankController.js';
-    import {ChatSource} from '/js/chatSource.js';
+    import {ChannelService} from '/js/services/channelService.js';
+    import {MessageService} from '/js/services/messageService.js';
     import {ChatWindowViewController} from '/js/controllers/chatWindowViewController.js';
     import {CommandController} from '/js/commandController.js';
-    import {RankedQueueService} from '/js/rankedQueueService.js';
-    import {GiveawayService} from '/js/giveawayService.js';
+    import {RankedQueueService} from '/js/services/rankedQueueService.js';
+    import {GiveawayService} from '/js/services/giveawayService.js';
     import {RankedQueueViewController} from '/js/controllers/rankQueueViewController.js';
     import {GiveawayViewController} from '/js/controllers/giveawayViewController.js';
 
@@ -30,14 +31,15 @@
     win.setAlwaysOnTop(true);
 
     let appLifeCycleService = new AppLifeCycleService();
-    let configSource = new ConfigSource("config.json", appLifeCycleService);
-    let rankController = new RankController(configSource);
-    let chatSource = new ChatSource(configSource, rankController);
+    let configService = new ConfigService("config.json", appLifeCycleService);
+    let channelService = new ChannelService(configService);
+    let rankController = new RankController(configService);
+    let messageService = new MessageService(channelService, rankController, configService);
     let rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
-    let giveawayService = new GiveawayService(rankController, chatSource);
-    new CommandController(chatSource, rankController, rankedQueueService);
-    let messageList = document.querySelector('#message_list');
-    new ChatWindowViewController(messageList, chatSource, configSource);
+    let giveawayService = new GiveawayService(messageService);
+    new CommandController(messageService, rankController, rankedQueueService);
+    let messageListView = document.querySelector('#message_list');
+    new ChatWindowViewController(messageListView, messageService, configService);
 
     document.body.addEventListener('contextmenu', function(ev) {
         ev.preventDefault();

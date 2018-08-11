@@ -1,10 +1,9 @@
 import {GiveawayUser} from '/js/model/giveawayUser.js';
 
 export class GiveawayService {
-    constructor (rankController, chatSource) {
-        this._rankController = rankController;
-        this._chatSource = chatSource;
-        this._chatSource.addMessageListener(this._onMessage.bind(this));
+    constructor (messageService) {
+        this._messageService = messageService;
+        this._messageService.addMessageListener(this._onMessage.bind(this));
 
         this.onstatechange = null;
         this.oncountdown = null;

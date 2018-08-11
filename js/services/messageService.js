@@ -1,25 +1,20 @@
 import {Message} from '/js/model/message.js';
-import {peka2tv} from '/js/chats/peka2tv.js';
-import {gg} from '/js/chats/gg.js';
-import {twitch} from '/js/chats/twitch.js';
-import {youtube} from '/js/chats/youtube.js';
 
-export class ChatSource {
-    constructor (configSource, rankController) {
-        this._configSource = configSource;
+export class MessageService {
+    constructor (channelService, rankController, configService) {
+        this._channelService = channelService;
+        this._channelService.addMessageListener(this._onMessage.bind(this));
+
         this._rankController = rankController;
 
-        this._chats = {};
-        this._chatAliases = {
-            "peka2tv": peka2tv,
-            "gg": gg,
-            "twitch": twitch,
-            "youtube": youtube
-        };
+        this._rankControllerInitialized = false;
+
+        this._configService = configService;
 
         this._messages = [];
         this._messageQueue = [];
-        this._listeners = [];
+        this._messageListeners = [];
+
         this._specialRanks = {
             "donation": {
                 "exp": -1,
@@ -38,69 +33,33 @@ export class ChatSource {
                 return;
             }
 
-            this._initializeChats();
+            this._rankControllerInitialized = true;
+            this._processMessageQueue();
         }.bind(this));
     }
 
     addMessageListener (listener) {
-        this._listeners.push(listener);
+        this._messageListeners.push(listener);
     }
     
     removeMessageListener (listener) {
-        var index = this._listeners.indexOf(listener);
+        var index = this._messageListeners.indexOf(listener);
         if (index < 0) {
             return;
         }
-        this._listeners.splice(index, 1);
+        this._messageListeners.splice(index, 1);
     }
-    
-    postMessage (message, to, chat, channel) {
-        var chat = this._chats[this._fullChannelId(chat, channel)];
-        if (typeof chat.postMessage === "function") {
-            chat.postMessage(message, to);
-        } else {
-            // TODO: Show message in chat window it is not possible to post in original chat
-        }
-    }
-    
-    _initializeChats  () {
-        let channels = this._configSource.getChannels();
-        for (let iChat = 0; iChat < channels.length; ++iChat) {
-            let chatDesc = channels[iChat];
 
-            var parameters = [chatDesc.channelId];
-
-            if (typeof chatDesc.username === "string") {
-                parameters.push(chatDesc.username);
-
-                if (typeof chatDesc.password === "string") {
-                    parameters.push(chatDesc.password);
-                }
-            }
-
-            let ChatClass = this._chatAliases[chatDesc.type];
-            if (!ChatClass) {
-                var errorMessage = new Message();
-                errorMessage.message = "Unexpected chat type '" + chatDesc.type + "'.";
-                errorMessage.isError = true;
-                this._addMessage(errorMessage);
-                continue;
-            }
-            
-            let chat = new (Function.prototype.bind.apply(ChatClass, [null].concat(parameters)));
-            chat.onMessage = this._onMessage.bind(this);
-            this._chats[this._fullChannelId(chat.name, chatDesc.channelId)] = chat;
+    postMessage (message, to, chatType, channel) {
+        if (!this._channelService.postMessage(message, to, chatType, channel)) {
+            // TODO: Show the message in the chat window it is not possible to post in original chat
         }
     }
     
     _notifyListeners  (message) {
-        for (var iListener = 0; iListener < this._listeners.length; ++iListener) {
-            this._listeners[iListener](message);
+        for (let listener of this._messageListeners) {
+            listener(message);
         }
-    }
-    
-    _fullChannelId  (chatName, channelName) {
-        return chatName + "_" + channelName;
     }
     
     _rankUp  (user) {
@@ -133,12 +92,11 @@ export class ChatSource {
         return false;
     }
     
-    _onMessage (chat, message) {
-        var messageQueueWasEmpty = this._messageQueue.length === 0;
-        message.chat = chat.name;
-        message.channel = chat.channel;
+    _onMessage (message) {
+        var shouldProcessQueue = this._rankControllerInitialized && this._messageQueue.length === 0;
+
         this._messageQueue.push(message);
-        if (messageQueueWasEmpty) {
+        if (shouldProcessQueue) {
             this._processMessageQueue();
         }
     }
@@ -162,12 +120,13 @@ export class ChatSource {
             this._processMessageQueue();
             return;
         }
-    
-        var lastMessageTime = this._configSource.getChannelLastMessageTime(message.chat, message.channel);
+
+        var lastMessageTime = this._configService.getChannelLastMessageTime(message.chat, message.channel);
         message.isFresh = !message.time || message.time > lastMessageTime;
+        
         if (message.isFresh) {
             if (message.time) {
-                this._configSource.setChannelLastMessageTime(message.chat, message.channel, message.time);
+                this._configService.setChannelLastMessageTime(message.chat, message.channel, message.time);
             }
             this._rankController.processMessage(message, {}, function (isRankUp, user) {
                 if (isRankUp) {
@@ -179,7 +138,7 @@ export class ChatSource {
             }.bind(this));
         } else {
             this._rankController.getUserRankAndExp(message.nickname, function (user) {
-                var rankId = user && user.rankId ? user.rankId : this._configSource.getDefaultRankId();
+                var rankId = user && user.rankId ? user.rankId : this._configService.getDefaultRankId();
                 this._addMessage(message, rankId);
                 this._messageQueue.shift();
                 this._processMessageQueue();
@@ -189,9 +148,9 @@ export class ChatSource {
     
     _addMessage  (message, rankId) {
         if (rankId === undefined) {
-            rankId = this._configSource.getDefaultRankId();
+            rankId = this._configService.getDefaultRankId();
         }
-        var chat = this._chats[this._fullChannelId(message.chat, message.channel)];
+        
         var rank = this._rankController.getRankById(rankId);
         if (rank === undefined) {
             rank = this._specialRanks[rankId];
@@ -202,9 +161,10 @@ export class ChatSource {
             message.rankIcon = rank.icon;
             message.rankTitle = rank.title;    
         }
-    
-        if (chat) {
-            message.chatLogo = chat.chatLogoClass;
+
+        let chatLogoClass = this._channelService.getChatLogoClass(message.chat, message.channel);
+        if (chatLogoClass) {
+            message.chatLogo = chatLogoClass;
         }
 
         this._messages.push(message);

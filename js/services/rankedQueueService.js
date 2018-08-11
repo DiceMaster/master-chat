@@ -1,11 +1,9 @@
 import {RankedQueueUser} from '/js/model/rankedQueueUser.js';
 
 export class RankedQueueService {
-    constructor (filename, appLifeCycleService, rankController, chatSource) {
+    constructor (filename, appLifeCycleService, rankController) {
         this._queuePath = filename;
         this._fs = require("fs");
-
-        this._chatSource = chatSource;
 
         this._appLifeCycleService = appLifeCycleService;
         this._appLifeCycleService.onClose(this._saveQueue.bind(this));

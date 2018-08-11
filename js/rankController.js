@@ -1,10 +1,10 @@
 import {User} from '/js/model/user.js';
 
 export class RankController {
-    constructor (configSource) {
-        this._configSource = configSource;
+    constructor (configService) {
+        this._configService = configService;
         this._rankUpHandlers = [];
-        this._sortedRanks = this._sortedRanks(this._configSource.getRanks());
+        this._sortedRanks = this._sortedRanks(this._configService.getRanks());
 
         this._onLoadHandler = null;
         this._loaded = false;
@@ -51,15 +51,16 @@ export class RankController {
     processMessage (message, options, callback) {
         var expGain;
         if (options.firstMessage) {
-            expGain = this._configSource.getFirstMessageExperience();
+            expGain = this._configService.getFirstMessageExperience();
         } else if (options.smileOnly) {
-            expGain = this._configSource.getSmileExperience();
+            expGain = this._configService.getSmileExperience();
         } else {
-            expGain = this._configSource.getMessageExperience();
+            expGain = this._configService.getMessageExperience();
         }
         this._db.update({ name: message.nickname }, { $inc: { exp: expGain } }, { upsert: true });
         this._db.find({ name: message.nickname }, function (err, users) {
             if (err || users === undefined || users.length < 1) {
+                console.log("Rank controller can't find user. Error = " + err);
                 return;
             }
             var user = users[0];
@@ -87,23 +88,23 @@ export class RankController {
             var user = new User();
             user.name = username;
             user.exp = 0;
-            user.rankId = this._configSource.getDefaultRankId();
+            user.rankId = this._configService.getDefaultRankId();
             callback(user);
         }.bind(this));
     }
     
     getRankById(rankId) {
-        return this._configSource.getRanks()[rankId];
+        return this._configService.getRanks()[rankId];
     }
     
     getNextRank (rankId) {
         if (rankId === undefined) {
-            rankId = this._configSource.getDefaultRankId();
+            rankId = this._configService.getDefaultRankId();
         }
-        if (this._configSource.getRanks()[rankId].exp < 0) {
+        if (this._configService.getRanks()[rankId].exp < 0) {
             return rankId;
         }
-        var exp = this._configSource.getRanks()[rankId].exp;
+        var exp = this._configService.getRanks()[rankId].exp;
         for (var iRank = 0; iRank < this._sortedRanks.length; ++iRank) {
             if (this._sortedRanks[iRank].exp > exp) {
                 return this._sortedRanks[iRank].id;
@@ -124,7 +125,7 @@ export class RankController {
         if (newRankId !== user.rankId) {
             user.rankId = newRankId;
             this._db.update({ name: user.name }, { $set: { rankId: user.rankId } }, {});
-            return user.rankId !== this._configSource.getDefaultRankId();
+            return user.rankId !== this._configService.getDefaultRankId();
         }
         return false;
     }
@@ -150,11 +151,11 @@ export class RankController {
     
     _getNextRank (currentRankId, exp) {
         if (currentRankId !== undefined) {
-            if (this._configSource.getRanks()[currentRankId].exp < 0) {
+            if (this._configService.getRanks()[currentRankId].exp < 0) {
                 return currentRankId;
             }
-            if (this._configSource.getRanks()[currentRankId].exp > exp) {
-                exp = this._configSource.getRanks()[currentRankId].exp;
+            if (this._configService.getRanks()[currentRankId].exp > exp) {
+                exp = this._configService.getRanks()[currentRankId].exp;
             }
         }
         var iRank;
