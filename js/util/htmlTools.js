@@ -4,7 +4,7 @@ export class HtmlTools {
     }
 
     static anchorLinksEscapeHtml (text) {
-        var linkRegex = /((https?:\/\/|www\.|[^\s:=]+@www\.).*?[a-z_\/0-9\-\#=&])(?=(\.|,|;|\?|\!)?("|'|«|»|\[|\s|\r|\n|$))/g;
+        var linkRegex = /((https?:\/\/|ftps?:\/\/|www\.|[^\s:=]+@www\.).*?[a-zA-Z_\/0-9\-\#=&])(?=(\.|,|;|:|\?|\!)?("|'|«|»|\[|\s|\r|\n|$))/g;
         
         var parts = [];
         
