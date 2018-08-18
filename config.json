@@ -14,58 +14,5 @@
       "username": "DiceMaster",
       "channelId": "<your stream id>"
     }
-  ],
-  "experience": {
-    "message": 10,
-    "smile": 5,
-    "visiting": 50,
-    "defaultRankId": "rookie",
-    "ranks": {
-      "crab": {
-        "exp": -1,
-        "icon": "img/ranks/Crab.png",
-        "title": "Crab"
-      },
-      "rookie": {
-        "exp": 0,
-        "icon": "img/ranks/Rank0-Rookie.png",
-        "title": "1 - Rookie"
-      },
-      "squaddie": {
-        "exp": 500,
-        "icon": "img/ranks/Rank1-Squaddie.png",
-        "title": "2 - Squaddie"
-      },
-      "corporal": {
-        "exp": 1077,
-        "icon": "img/ranks/Rank2-Corporal.png",
-        "title": "3 - Corporal"
-      },
-      "sergeant": {
-        "exp": 2321,
-        "icon": "img/ranks/Rank3-Sergeant.png",
-        "title": "4 - Sergeant"
-      },
-      "lieutenant": {
-        "exp": 5000,
-        "icon": "img/ranks/Rank4-Lieutenant.png",
-        "title": "5 - Lieutenant"
-      },
-      "captain": {
-        "exp": 10772,
-        "icon": "img/ranks/Rank5-Captain.png",
-        "title": "6 - Captain"
-      },
-      "major": {
-        "exp": 23208,
-        "icon": "img/ranks/Rank6-Major.png",
-        "title": "7 - Major"
-      },
-      "colonel": {
-        "exp": 50000,
-        "icon": "img/ranks/Rank7-Colonel.png",
-        "title": "8 - Colonel"
-      }
-    }
-  }
+  ]
 }

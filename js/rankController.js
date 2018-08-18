@@ -4,13 +4,19 @@ export class RankController {
     constructor (configService) {
         this._configService = configService;
         this._rankUpHandlers = [];
-        this._sortedRanks = this._sortedRanks(this._configService.getRanks());
+        this._sortedRanks = this._sortRanks(this._configService.getRanks());
+        const defaultRank = this._sortedRanks.find(rank => rank.exp >= 0);
+        this._defaultRankId = defaultRank ? defaultRank.id : undefined;
 
         this._onLoadHandler = null;
         this._loaded = false;
         this._loadError = null;
 
-        var Datastore = require('nedb');
+        this._EXP_REGULAR = 10;
+        this._EXP_FIRST_MSG = 50;
+        this._EXP_SMILE = 5;
+
+        const Datastore = require('nedb');
         this._db = new Datastore({
             filename: 'ranks.db'
         });
@@ -49,13 +55,13 @@ export class RankController {
     }
 
     processMessage (message, options, callback) {
-        var expGain;
+        let expGain;
         if (options.firstMessage) {
-            expGain = this._configService.getFirstMessageExperience();
+            expGain = this._EXP_FIRST_MSG;
         } else if (options.smileOnly) {
-            expGain = this._configService.getSmileExperience();
+            expGain = this._EXP_SMILE;
         } else {
-            expGain = this._configService.getMessageExperience();
+            expGain = this._EXP_REGULAR;
         }
         this._db.update({ name: message.nickname }, { $inc: { exp: expGain } }, { upsert: true });
         this._db.find({ name: message.nickname }, function (err, users) {
@@ -63,12 +69,12 @@ export class RankController {
                 console.log("Rank controller can't find user. Error = " + err);
                 return;
             }
-            var user = users[0];
-            var rankChanged = this._updateRank(user);
+            const user = users[0];
+            const rankChanged = this._updateRank(user);
             callback(rankChanged, user);
             if (rankChanged) {
-                for (var iHandler = 0; iHandler < this._rankUpHandlers.length; ++iHandler) {
-                    var handler = this._rankUpHandlers[iHandler];
+                for (let iHandler = 0; iHandler < this._rankUpHandlers.length; ++iHandler) {
+                    const handler = this._rankUpHandlers[iHandler];
                     handler(user);
                 }
             }
@@ -85,10 +91,10 @@ export class RankController {
                 callback(users[0]);
                 return;
             }
-            var user = new User();
+            const user = new User();
             user.name = username;
             user.exp = 0;
-            user.rankId = this._configService.getDefaultRankId();
+            user.rankId = this._defaultRankId;
             callback(user);
         }.bind(this));
     }
@@ -96,16 +102,20 @@ export class RankController {
     getRankById(rankId) {
         return this._configService.getRanks()[rankId];
     }
+
+    getDefaultRankId () {
+        return this._defaultRankId;
+    }
     
     getNextRank (rankId) {
         if (rankId === undefined) {
-            rankId = this._configService.getDefaultRankId();
+            rankId = this._defaultRankId;
         }
         if (this._configService.getRanks()[rankId].exp < 0) {
             return rankId;
         }
-        var exp = this._configService.getRanks()[rankId].exp;
-        for (var iRank = 0; iRank < this._sortedRanks.length; ++iRank) {
+        const exp = this._configService.getRanks()[rankId].exp;
+        for (let iRank = 0; iRank < this._sortedRanks.length; ++iRank) {
             if (this._sortedRanks[iRank].exp > exp) {
                 return this._sortedRanks[iRank].id;
             }
@@ -121,29 +131,29 @@ export class RankController {
     }
     
     _updateRank (user) {
-        var newRankId = this._getNextRank(user.rankId, user.exp);
+        const newRankId = this._getNextRank(user.rankId, user.exp);
         if (newRankId !== user.rankId) {
             user.rankId = newRankId;
             this._db.update({ name: user.name }, { $set: { rankId: user.rankId } }, {});
-            return user.rankId !== this._configService.getDefaultRankId();
+            return user.rankId !== this._defaultRankId;
         }
         return false;
     }
     
-    _sortedRanks(ranks) {
-        var unsortedRanks = [];
-        var rankIds = Object.keys(ranks);
+    _sortRanks(ranks) {
+        const unsortedRanks = [];
+        const rankIds = Object.keys(ranks);
         rankIds.forEach(function(rankId, index) {
-            var rank = ranks[rankId];
-            var rankCopy = {
+            const rank = ranks[rankId];
+            const rankCopy = {
                 "exp": rank.exp,
                 "icon": rank.icon,
-                "title": rank.title
+                "title": rank.title,
+                "id": rankId
             };
-            rankCopy.id = rankId;
             unsortedRanks.push(rankCopy);
         });
-        var sortedRanks = unsortedRanks.sort(function(a, b) {
+        const sortedRanks = unsortedRanks.sort(function(a, b) {
             return a.exp - b.exp;
         });
         return sortedRanks;
@@ -158,8 +168,7 @@ export class RankController {
                 exp = this._configService.getRanks()[currentRankId].exp;
             }
         }
-        var iRank;
-        for (iRank = 0; iRank < this._sortedRanks.length; ++iRank) {
+        for (var iRank = 0; iRank < this._sortedRanks.length; ++iRank) {
             if (this._sortedRanks[iRank].exp > exp) {
                 break;
             }

@@ -5,7 +5,10 @@ export class ConfigService {
         this._configPath = filename;
         this._fs = require("fs");
 
+        this._DEFAULT_THEME = "default";
+
         this._config = this._loadConfig(filename);
+        this._ranks = this._loadRanks("templates/" + this._config.theme + "/ranks.json");
         this._appLifeCycleService = appLifeCycleService;
         this._appLifeCycleService.onClose(this._saveConfig.bind(this));
         setInterval(this._saveConfig.bind(this), this._configSaveInterval);
@@ -16,18 +19,18 @@ export class ConfigService {
     }
     
     addChannel (type, channelId) {
-        var iChannel = this._getChannelIndex(type, channelId);
+        const iChannel = this._getChannelIndex(type, channelId);
         if (iChannel >= 0) {
             return;
         }
         this._config.channels = this._config.channels || [];
-        var newChannel = new Channel(type, channelId);
+        const newChannel = new Channel(type, channelId);
         this._config.channels.push(newChannel);
         this._isConfigChanged = true;
     }
     
     removeChannel (type, channelId) {
-        var iChannel = this._getChannelIndex(type, channelId);
+        const iChannel = this._getChannelIndex(type, channelId);
         if (iChannel < 0) {
             return;
         }
@@ -36,7 +39,7 @@ export class ConfigService {
     }
     
     getChannelLastMessageTime (type, channelId) {
-        var iChannel = this._getChannelIndex(type, channelId);
+        const iChannel = this._getChannelIndex(type, channelId);
         if (iChannel < 0) {
             return new Date(0);
         }
@@ -44,7 +47,7 @@ export class ConfigService {
     }
     
     setChannelLastMessageTime (type, channelId, lastMessageTime) {
-        var iChannel = this._getChannelIndex(type, channelId);
+        const iChannel = this._getChannelIndex(type, channelId);
         if (iChannel < 0) {
             return;
         }
@@ -53,23 +56,7 @@ export class ConfigService {
     }
     
     getRanks () {
-        return this._config.experience.ranks || {};
-    }
-    
-    getDefaultRankId () {
-        return this._config.experience.defaultRankId;
-    }
-    
-    getMessageExperience () {
-        return this._config.experience.message;
-    }
-    
-    getSmileExperience () {
-        return this._config.experience.smile;
-    }
-
-    getFirstMessageExperience () {
-        return this._config.experience.firstMessage;
+        return this._ranks || {};
     }
     
     getTheme () {
@@ -77,8 +64,8 @@ export class ConfigService {
     }
     
     _getChannelIndex (type, channelId) {
-        var channels = this._config.channels || [];
-        for (var iChannel = 0; iChannel < channels.length; ++iChannel) {
+        const channels = this._config.channels || [];
+        for (let iChannel = 0; iChannel < channels.length; ++iChannel) {
             if (channels[iChannel].type === type &&
                 channels[iChannel].channelId === channelId) {
                 return iChannel;
@@ -99,17 +86,27 @@ export class ConfigService {
     }
     
     _loadConfig (filename) {
-        var data = this._fs.readFileSync(filename);
-        var config = JSON.parse(data);
-        if (typeof(config.channels) === "undefined" ) {
-            return config;
-        }
-        for (var iChannel = 0; iChannel < config.channels.length; iChannel++) {
-            if (typeof(config.channels[iChannel].lastMessageTime) === "undefined") {
-                continue;
+        const data = this._fs.readFileSync(filename);
+        const config = JSON.parse(data) || {};
+        if (typeof(config.channels) !== "undefined" ) {
+            for (let iChannel = 0; iChannel < config.channels.length; iChannel++) {
+                if (typeof(config.channels[iChannel].lastMessageTime) === "undefined") {
+                    continue;
+                }
+                config.channels[iChannel].lastMessageTime = new Date(config.channels[iChannel].lastMessageTime);
             }
-            config.channels[iChannel].lastMessageTime = new Date(config.channels[iChannel].lastMessageTime);
         }
+        if (typeof(config.theme) === "undefined") {
+            config.theme = this._DEFAULT_THEME;
+        }
+        
         return config;
-    }    
+    }
+
+    _loadRanks (filename) {
+        const data = this._fs.readFileSync(filename);
+        const ranks = JSON.parse(data);
+
+        return ranks;
+    }
 }

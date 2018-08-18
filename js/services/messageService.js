@@ -138,7 +138,7 @@ export class MessageService {
             }.bind(this));
         } else {
             this._rankController.getUserRankAndExp(message.nickname, function (user) {
-                var rankId = user && user.rankId ? user.rankId : this._configService.getDefaultRankId();
+                var rankId = user && user.rankId ? user.rankId : this._rankController.getDefaultRankId();
                 this._addMessage(message, rankId);
                 this._messageQueue.shift();
                 this._processMessageQueue();
@@ -148,7 +148,7 @@ export class MessageService {
     
     _addMessage  (message, rankId) {
         if (rankId === undefined) {
-            rankId = this._configService.getDefaultRankId();
+            rankId = this._rankController.getDefaultRankId();
         }
         
         var rank = this._rankController.getRankById(rankId);
