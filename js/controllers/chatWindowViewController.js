@@ -5,8 +5,8 @@ export class ChatWindowViewController {
     constructor (view, messageService, configService) {
         this._view = view;
         this._configService = configService;
-        this._styleElement = null;
-        this._theme = this._loadTheme(this._configService.getTheme());
+        this._cssLinkElement = null;
+        this._theme = this._loadTheme(this._configService.getThemeName());
         this._applyThemeStyle(this._theme);
 
         this._messageService = messageService;
@@ -24,7 +24,7 @@ export class ChatWindowViewController {
     }
     
     _registerHotkeys () {
-        let option = {
+        const option = {
             key : "Ctrl+Shift+Up",
             active : function() {
                 console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -35,28 +35,30 @@ export class ChatWindowViewController {
             }
         };
     
-        let shortcut = new nw.Shortcut(option);
+        const shortcut = new nw.Shortcut(option);
         nw.App.registerGlobalHotKey(shortcut);
     }
     
     _applyThemeStyle (theme) {
-        let style = theme.getStyle();
-        if (!style) {
+        const cssPath = theme.getCssPath();
+        if (!cssPath) {
             return;
         }
-        if (!this._styleElement) {
-            this._styleElement = document.createElement("style");
-            this._styleElement.setAttribute("type", "text/css");
-            document.getElementsByTagName('head')[0].appendChild(this._styleElement);
+        if (!this._cssLinkElement) {
+            this._cssLinkElement = document.createElement("link");
+            this._cssLinkElement.setAttribute("rel", "stylesheet");
+            this._cssLinkElement.setAttribute("type", "text/css");
+            this._cssLinkElement.setAttribute("href", cssPath);
+
+            document.getElementsByTagName('head')[0].appendChild(this._cssLinkElement);
         }
-        this._styleElement.innerHTML = style;
     }
     
     _onmessage (message) {
-        let isScrollAtBottom = this._view.scrollTop + this._view.clientHeight >= this._view.scrollHeight - this._autoScrollThreshold;
+        const isScrollAtBottom = this._view.scrollTop + this._view.clientHeight >= this._view.scrollHeight - this._autoScrollThreshold;
     
-        let messageHtml = this._theme.getMessageHtml(message).trim();
-        let nodes = this._parser.parseFromString(messageHtml, 'text/html').body.childNodes;
+        const messageHtml = this._theme.getMessageHtml(message).trim();
+        const nodes = this._parser.parseFromString(messageHtml, 'text/html').body.childNodes;
 
         for (let node of nodes) {
             this._view.appendChild(node);

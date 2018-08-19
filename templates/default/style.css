@@ -5,19 +5,19 @@
 }
 
 .chat_goodgame_logo {
-    content: url(templates/default/gg_logo.png);
+    content: url(gg_logo.png);
 }
 
 .chat_peka2tv_logo {
-    content: url(templates/default/peka2tv_logo.png);
+    content: url(peka2tv_logo.png);
 }
 
 .chat_twitch_logo {
-    content: url(templates/default/twitch_logo.png);
+    content: url(twitch_logo.png);
 }
 
 .chat_youtube_logo {
-    content: url(templates/default/youtube_logo.png);
+    content: url(youtube_logo.png);
 }
 
 .username {

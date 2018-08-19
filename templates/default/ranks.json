@@ -1,42 +1,42 @@
 {
     "rookie": {
       "exp": 0,
-      "icon": "templates/default/ranks/Rank0-Rookie.png",
+      "icon": "ranks/Rank0-Rookie.png",
       "title": "1 - Новобранец"
     },
     "squaddie": {
       "exp": 500,
-      "icon": "templates/default/ranks/Rank1-Squaddie.png",
+      "icon": "ranks/Rank1-Squaddie.png",
       "title": "2 - Взводный"
     },
     "corporal": {
       "exp": 1077,
-      "icon": "templates/default/ranks/Rank2-Corporal.png",
+      "icon": "ranks/Rank2-Corporal.png",
       "title": "3 - Капрал"
     },
     "sergeant": {
       "exp": 2321,
-      "icon": "templates/default/ranks/Rank3-Sergeant.png",
+      "icon": "ranks/Rank3-Sergeant.png",
       "title": "4 - Сержант"
     },
     "lieutenant": {
       "exp": 5000,
-      "icon": "templates/default/ranks/Rank4-Lieutenant.png",
+      "icon": "ranks/Rank4-Lieutenant.png",
       "title": "5 - Лейтенант"
     },
     "captain": {
       "exp": 10772,
-      "icon": "templates/default/ranks/Rank5-Captain.png",
+      "icon": "ranks/Rank5-Captain.png",
       "title": "6 - Капитан"
     },
     "major": {
       "exp": 23208,
-      "icon": "templates/default/ranks/Rank6-Major.png",
+      "icon": "ranks/Rank6-Major.png",
       "title": "7 - Майор"
     },
     "colonel": {
       "exp": 50000,
-      "icon": "templates/default/ranks/Rank7-Colonel.png",
+      "icon": "ranks/Rank7-Colonel.png",
       "title": "8 - Полковник"
     }
 }

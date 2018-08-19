@@ -59,7 +59,7 @@ export class ConfigService {
         return this._ranks || {};
     }
     
-    getTheme () {
+    getThemeName () {
         return this._config.theme;
     }
     
