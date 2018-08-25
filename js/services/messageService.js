@@ -18,7 +18,7 @@ export class MessageService {
         this._specialRanks = {
             "donation": {
                 "exp": -1,
-                "icon": "img/donation.png",
+                "icon": "../../img/donation.png",
                 "title": "Donation"
             }
         };
