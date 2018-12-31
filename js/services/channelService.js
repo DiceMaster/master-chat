@@ -52,11 +52,8 @@ export class ChannelService {
         return chat.postMessage(message, to);
     }
 
-    fetchChennelStats (chat, channel, callback) {
-        let chat = this._chats[this._fullChannelId(chat, channel)];
-        if (typeof chat.fetchStats === "function") {
-            chat.fetchStats(callback);
-        }
+    getChannels () {
+        return Object.values(this._chats);
     }
     
     _initializeChats  () {

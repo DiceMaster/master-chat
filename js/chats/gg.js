@@ -1,4 +1,5 @@
 import {Message} from '/js/model/message.js';
+import {ChannelStatus} from '/js/model/channelStatus.js';
 import {HtmlTools} from '/js/util/htmlTools.js';
 
 export class gg {
@@ -13,12 +14,14 @@ export class gg {
         this.chatLogoClass = "chat_goodgame_logo";
 
         this._CHAT_URL = "wss://chat-2.goodgame.ru/chat2/";
+        this._STREAM_STATS_URL = "https://api2.goodgame.ru/v2/streams/";
         this._LOGIN_URL = " https://goodgame.ru/ajax/chatlogin/";
         this._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
         this._SMILES_DEFINITION_URL = "http://goodgame.ru/js/minified/global.js";
         this._SMILES_COMMON_CSS_URL = "http://goodgame.ru/css/compiled/common_smiles.css";
         this._SMILES_CHANNELS_CSS_URL = "http://goodgame.ru/css/compiled/channels_smiles.css";
         this._RETRY_INTERVAL = 10000;
+        this._STATUS_UPDATE_INTERVAL = 60000;
 
         this._socket = null;
         this._channelId = null;
@@ -28,8 +31,7 @@ export class gg {
         this._userId = null;
 
         this.onMessage = null;
-        this.onStatusChange = null;
-        this.onUsersCountChange = null;
+        this.onStatusChanged = null;
 
         var resourcesPromise = this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel))
             .then(function(channelId){
@@ -62,8 +64,11 @@ export class gg {
                 this._applyStyle(resourceValues[1] + "\n" + resourceValues[2]);
 
                 this._connect();
+
+                this._fetchStatus();
             }.bind(this)
         ).catch(function (err) {
+                console.log(err);
                 this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. " + err);
             }.bind(this));
     }
@@ -94,7 +99,39 @@ export class gg {
         };
         this._socket.send(JSON.stringify(chatMessage));
     }
-    
+
+    _fetchStatus () {
+        fetch(this._STREAM_STATS_URL + this.channel, {
+                headers: { "Accept": "application/json" }
+            })
+            .then(function(response) {
+                    return response.json();
+                }.bind(this)
+            ).then(function(json) {
+                    const status = json.status === "Live"
+                                 ? ChannelStatus.Status.Live
+                                 : ChannelStatus.Status.Offline;
+                    
+                    const viewers = json.player_viewers || 0;
+
+                    if (typeof this.onStatusChanged === "function") {
+                        this.onStatusChanged(status, viewers);
+                    }
+
+                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+                }.bind(this)
+            ).catch(function(error) {
+                    console.log(error);
+
+                    if (typeof this.onStatusChanged === "function") {
+                        this.onStatusChanged(ChannelStatus.Status.Unknown, 0);
+                    }
+
+                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+                }.bind(this)
+            );
+    }
+
     _login () {
         return new Promise(function(fulfill, reject) {
             this._request.post({

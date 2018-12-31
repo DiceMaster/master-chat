@@ -7,6 +7,7 @@
 </head>
 <body>
 <div id="chat_container">
+    <div id="channel_status_list"></div>
     <div id="message_list" class="big-smiles animated-smiles">
     </div>
 </div>
@@ -16,7 +17,9 @@
     import {RankController} from '/js/rankController.js';
     import {ChannelService} from '/js/services/channelService.js';
     import {MessageService} from '/js/services/messageService.js';
-    import {ChatWindowViewController} from '/js/controllers/chatWindowViewController.js';
+    import {ChannelStatusService} from '/js/services/channelStatusService.js';
+    import {MessageListViewController} from '/js/controllers/messageListViewController.js';
+    import {ChannelStatusViewController} from '/js/controllers/channelStatusViewController.js';
     import {CommandController} from '/js/commandController.js';
     import {RankedQueueService} from '/js/services/rankedQueueService.js';
     import {GiveawayService} from '/js/services/giveawayService.js';
@@ -30,26 +33,29 @@
     });
     win.setAlwaysOnTop(true);
 
-    let appLifeCycleService = new AppLifeCycleService();
-    let configService = new ConfigService("config.json", appLifeCycleService);
-    let channelService = new ChannelService(configService);
-    let rankController = new RankController(configService);
-    let messageService = new MessageService(channelService, rankController, configService);
-    let rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
-    let giveawayService = new GiveawayService(messageService);
+    const appLifeCycleService = new AppLifeCycleService();
+    const configService = new ConfigService("config.json", appLifeCycleService);
+    const channelService = new ChannelService(configService);
+    const rankController = new RankController(configService);
+    const messageService = new MessageService(channelService, rankController, configService);
+    const channelStatusService = new ChannelStatusService(channelService);
+    const rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
+    const giveawayService = new GiveawayService(messageService);
     new CommandController(messageService, rankController, rankedQueueService);
-    let messageListView = document.querySelector('#message_list');
-    new ChatWindowViewController(messageListView, messageService, configService);
+    const messageListView = document.querySelector('#message_list');
+    new MessageListViewController(messageListView, messageService, configService);
+    const channelStatusListView = document.querySelector('#channel_status_list');
+    new ChannelStatusViewController(channelStatusListView, channelStatusService);
 
     document.body.addEventListener('contextmenu', function(ev) {
         ev.preventDefault();
-        let menu = new nw.Menu();
-        let queueItem = new nw.MenuItem({ label: 'Очередь' });
+        const menu = new nw.Menu();
+        const queueItem = new nw.MenuItem({ label: 'Очередь' });
         queueItem.click = function() {
             new RankedQueueViewController(rankedQueueService);
         };
         menu.append(queueItem);
-        let giveawayItem = new nw.MenuItem({ label: 'Розыгрыш' });
+        const giveawayItem = new nw.MenuItem({ label: 'Розыгрыш' });
         giveawayItem.click = function() {
             new GiveawayViewController(giveawayService);
         };

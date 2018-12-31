@@ -1,4 +1,5 @@
 import {Message} from '/js/model/message.js';
+import {ChannelStatus} from '/js/model/channelStatus.js';
 import {HtmlTools} from '/js/util/htmlTools.js';
 
 export class twitch {
@@ -14,16 +15,17 @@ export class twitch {
         this.displayName = "Twitch.tv";
         this.chatLogoClass = "chat_twitch_logo";
 
-        this._IRC_URL = "irc.twitch.tv";
+        this._CLIENT_ID = "pzwxcc3xqzrlkbmz0nzxn7pt4xit46";
         this._SMILES_URL = "https://api.twitch.tv/kraken/chat/emoticons";
         this._EMOTICON_FILE_PATH = "twitch/smiles.json";
+        this._STREAM_STATS_URL = "https://api.twitch.tv/helix/streams?user_login=";
+        this._STATUS_UPDATE_INTERVAL = 60000;
 
         this._client = null;
         this._emoticons = null;
 
         this.onMessage = null;
-        this.onStatusChange = null;
-        this.onUsersCountChange = null;
+        this.onStatusChanged = null;
 
         var fileLoadFailed = false;
         var requestFailed = false;
@@ -66,6 +68,8 @@ export class twitch {
                     }
                 }.bind(this)
             );
+
+        this._fetchStatus();
     }
 
     postMessage (message, to) {
@@ -73,6 +77,47 @@ export class twitch {
             return;
         }
         this._client.say(this.channel, (to ? "@"+to+", " : "") + message);
+    }
+
+    _fetchStatus () {
+        fetch(this._STREAM_STATS_URL + this.channel, {
+                headers: { "Accept": "application/vnd.twitchtv.v5+json",
+                           "Client-ID": this._CLIENT_ID }
+            })
+            .then(function(response) {
+                    return response.json();
+                }.bind(this)
+            ).then(function(json) {
+                    let status = ChannelStatus.Status.Offline;
+                    let viewers = 0;
+
+                    const data = json.data;
+                    if (data && data.length > 0) {
+                        const dataObj = data[0];
+                        if (dataObj.type === 'live') {
+                            status = ChannelStatus.Status.Live;
+                        }
+                        if (typeof dataObj.viewer_count === "number") {
+                            viewers = dataObj.viewer_count;
+                        }
+                    }
+
+                    if (typeof this.onStatusChanged === "function") {
+                        this.onStatusChanged(status, viewers);
+                    }
+
+                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+                }.bind(this)
+            ).catch(function(error) {
+                    console.log(error);
+
+                    if (typeof this.onStatusChanged === "function") {
+                        this.onStatusChanged(ChannelStatus.Status.Unknown, 0);
+                    }
+
+                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+                }.bind(this)
+            );
     }
     
     _connect () {
@@ -294,7 +339,12 @@ export class twitch {
     
     _requestEmoticons () {
         return new Promise(function(fulfill, reject) {
-            this._request(this._SMILES_URL, function(error, response, body) {
+            this._request({
+                url: this._SMILES_URL,
+                headers: {
+                  'Accept': 'application/vnd.twitchtv.v5+json',
+                  'Client-ID': this._CLIENT_ID }
+            }, function(error, response, body) {
                 if (this._isStopped) {
                     return;
                 }

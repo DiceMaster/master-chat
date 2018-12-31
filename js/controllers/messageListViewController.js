@@ -1,7 +1,6 @@
 import {Theme} from '/js/theme.js';
 
-
-export class ChatWindowViewController {
+export class MessageListViewController {
     constructor (view, messageService, configService) {
         this._view = view;
         this._configService = configService;
