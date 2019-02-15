@@ -1,6 +1,11 @@
 {
   "name": "master-chat",
   "version": "0.3.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DiceMaster/master-chat.git"
+  },
   "main": "index.html",
   "chromium-args": "--disable-gpu",
   "window": {
