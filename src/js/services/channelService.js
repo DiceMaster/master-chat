@@ -1,8 +1,8 @@
-import {Message} from '/js/model/message.js';
-import {peka2tv} from '/js/chats/peka2tv.js';
-import {gg} from '/js/chats/gg.js';
-import {twitch} from '/js/chats/twitch.js';
-import {youtube} from '/js/chats/youtube.js';
+import {Message} from '/src/js/model/message.js';
+import {peka2tv} from '/src/js/chats/peka2tv.js';
+import {gg} from '/src/js/chats/gg.js';
+import {twitch} from '/src/js/chats/twitch.js';
+import {youtube} from '/src/js/chats/youtube.js';
 
 export class ChannelService {
     constructor (configService) {

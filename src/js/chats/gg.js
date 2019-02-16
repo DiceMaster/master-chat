@@ -1,6 +1,6 @@
-import {Message} from '/js/model/message.js';
-import {ChannelStatus} from '/js/model/channelStatus.js';
-import {HtmlTools} from '/js/util/htmlTools.js';
+import {Message} from '/src/js/model/message.js';
+import {ChannelStatus} from '/src/js/model/channelStatus.js';
+import {HtmlTools} from '/src/js/util/htmlTools.js';
 
 export class gg {
     constructor (channel, username, password) {

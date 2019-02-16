@@ -1,5 +1,5 @@
-import {Message} from '/js/model/message.js';
-import {HtmlTools} from '/js/util/htmlTools.js';
+import {Message} from '/src/js/model/message.js';
+import {HtmlTools} from '/src/js/util/htmlTools.js';
 
 export class peka2tv {
     constructor (channel, username, password) {

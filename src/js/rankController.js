@@ -1,4 +1,4 @@
-import {User} from '/js/model/user.js';
+import {User} from '/src/js/model/user.js';
 
 export class RankController {
     constructor (configService) {

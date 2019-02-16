@@ -1,4 +1,4 @@
-import {Channel} from '/js/model/channel.js';
+import {Channel} from '/src/js/model/channel.js';
 
 export class ConfigService {
     constructor (filename, appLifeCycleService) {

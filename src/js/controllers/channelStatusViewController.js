@@ -1,5 +1,5 @@
-import {ChannelStatus} from '/js/model/channelStatus.js';
-import {ChannelStatusView} from '/js/model/channelStatusView.js';
+import {ChannelStatus} from '/src/js/model/channelStatus.js';
+import {ChannelStatusView} from '/src/js/model/channelStatusView.js';
 
 export class ChannelStatusViewController {
     constructor (view, channelStatusService) {

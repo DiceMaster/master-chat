@@ -2,7 +2,7 @@ export class RankedQueueViewController {
     constructor (rankerQueueService) {
         this._rankerQueueService = rankerQueueService;
         this._rankerQueueService.onupdate = this._onRankedQueueServiceUpdate.bind(this);
-        this._window = nw.Window.open('rankedQueue.html', {
+        this._window = nw.Window.open('/src/rankedQueue.html', {
             position: 'center',
             width: 400,
             height: 400

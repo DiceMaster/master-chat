@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/DiceMaster/master-chat.git"
   },
-  "main": "index.html",
+  "main": "src/index.html",
   "chromium-args": "--disable-gpu",
   "window": {
     "title": "MasterChat",

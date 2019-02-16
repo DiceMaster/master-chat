@@ -1,4 +1,4 @@
-import {ChannelStatus} from '/js/model/channelStatus.js';
+import {ChannelStatus} from '/src/js/model/channelStatus.js';
 
 export class ChannelStatusService {
     constructor (channelService) {

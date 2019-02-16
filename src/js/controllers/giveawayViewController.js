@@ -7,7 +7,7 @@ export class GiveawayViewController {
         
         this._parser = new DOMParser();
 
-        nw.Window.open('giveaway.html', {
+        nw.Window.open('/src/giveaway.html', {
             "position": 'center',
             "width": 400,
             "height": 700

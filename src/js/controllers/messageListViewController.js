@@ -1,4 +1,4 @@
-import {Theme} from '/js/theme.js';
+import {Theme} from '/src/js/theme.js';
 
 export class MessageListViewController {
     constructor (view, messageService, configService) {

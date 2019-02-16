@@ -1,4 +1,4 @@
-import {RankedQueueUser} from '/js/model/rankedQueueUser.js';
+import {RankedQueueUser} from '/src/js/model/rankedQueueUser.js';
 
 export class RankedQueueService {
     constructor (filename, appLifeCycleService, rankController) {

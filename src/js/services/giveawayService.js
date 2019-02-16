@@ -1,4 +1,4 @@
-import {GiveawayUser} from '/js/model/giveawayUser.js';
+import {GiveawayUser} from '/src/js/model/giveawayUser.js';
 
 export class GiveawayService {
     constructor (messageService) {
