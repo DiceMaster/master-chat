@@ -16,58 +16,15 @@ export class twitch {
         this.chatLogoClass = "chat_twitch_logo";
 
         this._CLIENT_ID = "pzwxcc3xqzrlkbmz0nzxn7pt4xit46";
-        this._SMILES_URL = "https://api.twitch.tv/kraken/chat/emoticons";
-        this._EMOTICON_FILE_PATH = "twitch/smiles.json";
         this._STREAM_STATS_URL = "https://api.twitch.tv/helix/streams?user_login=";
         this._STATUS_UPDATE_INTERVAL = 60000;
 
         this._client = null;
-        this._emoticons = null;
 
         this.onMessage = null;
         this.onStatusChanged = null;
 
-        var fileLoadFailed = false;
-        var requestFailed = false;
-        this._loadEmoticons()
-            .then(function(emoticons) {
-                    if (this._emoticons) {
-                        this._saveEmoticons();
-                    } else {
-                        this._emoticons = emoticons;
-                        this._connect();
-                    }
-                }.bind(this)
-            )
-            .catch(function() {
-                    fileLoadFailed = true;
-                    if (requestFailed) {
-                        this._fireErrorMessage("Ошибка подключения к Twitch каналу " + channel +
-                            ". Не удалось получить список смайлов как от сервера, так и из кэша.");
-                    }
-                }.bind(this)
-            );
-
-        this._requestEmoticons()
-            .then(function(emoticons) {
-                    var emoticonsAlreadyLoaded = !!this._emoticons;
-                    this._emoticons = this._extractEmotionSizes(emoticons);
-                    if (fileLoadFailed || emoticonsAlreadyLoaded) {
-                        this._saveEmoticons();
-                    }
-                    if (!emoticonsAlreadyLoaded) {
-                        this._connect();
-                    }
-                }.bind(this)
-            )
-            .catch(function(err) {
-                    requestFailed = true;
-                    if (fileLoadFailed) {
-                        this._fireErrorMessage("Ошибка подключения к Twitch каналу " + channel +
-                            ". Не удалось получить список смайлов как от сервера, так и из кэша.");
-                    }
-                }.bind(this)
-            );
+        this._connect();
 
         this._fetchStatus();
     }
@@ -265,13 +222,7 @@ export class twitch {
             }
             var emoticonRegex = message.substring(place.from, place.to);
 
-            var emoticonHtml = "<img class='chat-smile'";
-
-            var emoticonSize = this._emoticons[emoticonRegex];
-            if (emoticonSize) {
-                emoticonHtml += " width='" + emoticonSize.width + "' height='" + emoticonSize.height + "'";
-            }
-            emoticonHtml += " src='http://static-cdn.jtvnw.net/emoticons/v1/" + place.emoteId + "/1.0' title='" + emoticonRegex + "'>";
+            var emoticonHtml = "<img class='chat-smile' src='http://static-cdn.jtvnw.net/emoticons/v1/" + place.emoteId + "/1.0' title='" + emoticonRegex + "'>";
 
             parts.push(emoticonHtml);
 
@@ -292,80 +243,5 @@ export class twitch {
         if (typeof(this.onMessage) === "function") {
             this.onMessage(this, errorMessage);
         }
-    }
-    
-    _extractEmotionSizes (emoticons) {
-        var emoticonSizes = {};
-        for (var iEmoticon = 0; iEmoticon < emoticons.length; ++iEmoticon) {
-            var emoticon = emoticons[iEmoticon];
-            emoticonSizes[emoticon.regex] = {
-                "width": emoticon.images[0].width,
-                "height": emoticon.images[0].height,
-            };
-        }
-        return emoticonSizes;
-    }
-    
-    _loadEmoticons () {
-        return new Promise(function(fulfill, reject) {
-            this._fs.exists(this._EMOTICON_FILE_PATH, function(exists) {
-                if (this._isStopped) {
-                    return;
-                }
-                if (!exists) {
-                    reject("Файл с описанием смайлов не существует.");
-                    return;
-                }
-                this._fs.readFile(this._EMOTICON_FILE_PATH, function (err, data) {
-                    if (this._isStopped) {
-                        return;
-                    }
-                    if (err) {
-                        reject("Не удается прочитать файл с описанием смайлов.");
-                        return;
-                    }
-                    var emoticons;
-                    try {
-                        emoticons = JSON.parse(data);
-                    } catch (ex) {
-                        reject("Содержимое файла с описанием самйлов имеет недопустимый формат.");
-                        return;
-                    }
-                    fulfill(emoticons);
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
-    }
-    
-    _requestEmoticons () {
-        return new Promise(function(fulfill, reject) {
-            this._request({
-                url: this._SMILES_URL,
-                headers: {
-                  'Accept': 'application/vnd.twitchtv.v5+json',
-                  'Client-ID': this._CLIENT_ID }
-            }, function(error, response, body) {
-                if (this._isStopped) {
-                    return;
-                }
-                if (error || response.statusCode !== 200) {
-                    return reject("Не удалось получить описание смайлов.");
-                }
-                var jsonData;
-                try {
-                    jsonData = JSON.parse(body);
-                } catch (ex) {
-                    reject("полученный список смайлов имеет недопустимый формат.");
-                    return;
-                }
-                fulfill(jsonData.emoticons);
-            }.bind(this));
-        }.bind(this));
-    }
-    
-    _saveEmoticons () {
-        this._fs.writeFile(this._EMOTICON_FILE_PATH, JSON.stringify(this._emoticons, null, 2), function () {
-    
-        }.bind(this));
     }
 }
