@@ -79,7 +79,7 @@ export class twitch {
     
     _connect () {
         try {
-            var twitch = require("twitch-js");
+            var twitch = require("tmi.js");
             var options = {
                 options: {
                     debug: true
