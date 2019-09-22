@@ -11,7 +11,7 @@ export class peka2tv {
         this.displayName = "peka2.tv";    
         this.chatLogoClass = "chat_peka2tv_logo";
 
-        this._API_URL = "https://peka2.tv";
+        this._API_URL = "https://sc2tv.ru";
         this._CHANNEL_RETRY_INTERVAL = 10000;
         this._CHAT_RELOAD_INTERVAL = 5000;
 
