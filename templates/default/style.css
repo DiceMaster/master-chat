@@ -1,7 +1,10 @@
-.chat_logo {
-    position: relative;
-    display: inline-block;
+.chat_logo, .rank_icon {
     margin: 0 4px 0 0;
+}
+
+.rank_icon {
+    width: 20px;
+    height: 20px;
 }
 
 .chat_goodgame_logo {

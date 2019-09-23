@@ -88,7 +88,7 @@ export class GiveawayViewController {
     
     _addUser (user, container) {
         let userDivString = "<div class='giveaway-user'><div class='chat_logo " + user.chatLogo + "'></div>" +
-            "<img width=20 height=20 class='chat_logo'src='" + user.rankIcon + "'>" +
+            "<img class='rank_icon'src='" + user.rankIcon + "'>" +
             "<span class='nick username-normal'>" + user.name + "</span></div>";
 
         let node = this._parser.parseFromString(userDivString, 'text/html').body.firstChild;

@@ -1,8 +1,9 @@
 import {Theme} from '/src/js/theme.js';
 
 export class MessageListViewController {
-    constructor (view, messageService, configService) {
+    constructor (view, messageService, messageTemplate, configService) {
         this._view = view;
+        this._document = view.ownerDocument;
         this._configService = configService;
         this._cssLinkElement = null;
         this._theme = this._loadTheme(this._configService.getThemeName());
@@ -10,6 +11,9 @@ export class MessageListViewController {
 
         this._messageService = messageService;
         this._messageService.addMessageListener(this._onmessage.bind(this));
+
+        const handlebars = require('handlebars');
+        this._messageTemplate = handlebars.compile(messageTemplate);
 
         this._parser = new DOMParser();
 
@@ -44,19 +48,22 @@ export class MessageListViewController {
             return;
         }
         if (!this._cssLinkElement) {
-            this._cssLinkElement = document.createElement("link");
+            this._cssLinkElement = this._document.createElement("link");
             this._cssLinkElement.setAttribute("rel", "stylesheet");
             this._cssLinkElement.setAttribute("type", "text/css");
             this._cssLinkElement.setAttribute("href", cssPath);
 
-            document.getElementsByTagName('head')[0].appendChild(this._cssLinkElement);
+            this._document.getElementsByTagName('head')[0].appendChild(this._cssLinkElement);
         }
     }
     
     _onmessage (message) {
         const isScrollAtBottom = this._view.scrollTop + this._view.clientHeight >= this._view.scrollHeight - this._autoScrollThreshold;
+
+        const messageCopy = Object.assign({}, message);
+        messageCopy.rankIcon = this._theme.getRankIconPath(message.rankIcon);
     
-        const messageHtml = this._theme.getMessageHtml(message).trim();
+        const messageHtml = this._messageTemplate(messageCopy).trim();
         const nodes = this._parser.parseFromString(messageHtml, 'text/html').body.childNodes;
 
         for (let node of nodes) {

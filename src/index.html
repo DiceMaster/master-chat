@@ -11,6 +11,21 @@
     <div id="message_list" class="big-smiles animated-smiles">
     </div>
 </div>
+<script id="message-template" type="text/x-handlebars-template">
+    {{#if isSystem}}
+    <div class='system_message'>{{{message}}}</div>
+    {{else}}{{#if isError}}
+    <div class='error_message'>{{{message}}}</div>
+    {{else}}
+    <div class='regular_message'>
+        <div class='chat_logo {{chatLogo}}'></div>
+        <img class='rank_icon' title='{{rankTitle}}' src='{{rankIcon}}'>
+        <span class='nick username-normal'>{{nickname}}</span>
+        <span{{#if isPersonal}} class='message-to-user'{{/if}}>{{{message}}}</span>
+    </div>
+    {{/if}}
+    {{/if}}
+</script>
 <script type="module">
     import {AppLifeCycleService} from '/src/js/services/appLifeCycleService.js';
     import {ConfigService} from '/src/js/services/configService.js';
@@ -42,9 +57,10 @@
     const rankedQueueService = new RankedQueueService("rankedQueue.json", appLifeCycleService, rankController);
     const giveawayService = new GiveawayService(messageService);
     new CommandController(messageService, rankController, rankedQueueService);
-    const messageListView = document.querySelector('#message_list');
-    new MessageListViewController(messageListView, messageService, configService);
-    const channelStatusListView = document.querySelector('#channel_status_list');
+    const messageListView = document.getElementById('message_list');
+    const messageTemplate = document.getElementById('message-template').innerHTML;
+    new MessageListViewController(messageListView, messageService, messageTemplate, configService);
+    const channelStatusListView = document.getElementById('channel_status_list');
     new ChannelStatusViewController(channelStatusListView, channelStatusService);
 
     document.body.addEventListener('contextmenu', function(ev) {

@@ -79,3 +79,8 @@ body {
     min-width: 0;
     margin-bottom: 5px;
 }
+
+.chat_logo, .rank_icon {
+    position: relative;
+    display: inline-block;
+}
