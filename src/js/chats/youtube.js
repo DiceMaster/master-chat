@@ -52,25 +52,29 @@ export class youtube {
         this._readChat();
     }
     
-    _readChat () {
-        this._request(this._CHAT_URL.replace("{0}", this.channel).replace("{1}", this._lastTime.toString()), function (error, response, body) {
-            if (this._isStopped) {
-                return;
-            }
-            if (error || response.statusCode !== 200) {
-                return;
-            }
+    async _readChat () {
+        const url = this._CHAT_URL.replace("{0}", this.channel).replace("{1}", this._lastTime.toString());
+
+        try {
+            const response = await fetch(url);
+         
+            const body = await response.text();
+         
             var parser=new DOMParser();
             var xmlDoc = parser.parseFromString(body,"text/xml");
             var content = xmlDoc.getElementsByTagName("html_content")[0];
             var jsonString = content.textContent;
             var contentObject = JSON.parse(jsonString);
+
             this._lastTime = contentObject.latest_time;
             for (var iComment = contentObject.comments.length - 1; iComment >= 0; --iComment) {
                 var comment = contentObject.comments[iComment];
                 this._processComment(comment);
             }
-        }.bind(this));
+        } catch (err) {
+            console.log(err);
+            return;
+        }
     }
     
     _processComment (comment) {

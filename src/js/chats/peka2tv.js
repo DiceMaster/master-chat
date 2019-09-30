@@ -33,27 +33,38 @@ export class peka2tv {
         this._usersIdentifiers = {};
         this._receivedMessageIds = new Set();
 
-        var promises = [this._findChannelId(), this._getSmiles()];
+        this._connectToChannel();
+    }
+
+    async _connectToChannel() {
+        var actions = [this._findChannelId(), this._getSmiles()];
         if (this._username && this._password) {
-            promises.push(this._login());
+            actions.push(this._login());
         }
-        Promise.all(promises)
-            .then(function (results) {
-                    this._channelId = results[0];
-                    this._smiles = results[1];
-                    if (this._username && this._password) {
-                        this._token = results[2].token;
-                        this._userId = results[2].userId;
-                    }
-                    this._connect();
-                }.bind(this))
-            .catch(function (err) {
-                    this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на peka2.tv. " + err);
-                }.bind(this));
+        
+        var results;
+        try {
+            results = await Promise.all(actions);
+        } catch (err) {
+            console.log(err);
+            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на peka2.tv.");
+            return;
+        }
+        
+        this._channelId = results[0];
+        this._smiles = results[1];
+        if (this._username && this._password) {
+            this._token = results[2].token;
+            this._userId = results[2].userId;
+        }
+        this._connectToChat();
     }
 
     stopChat () {
-        this._stopChat();
+        this._isStopped = true;
+        clearInterval(this._chatTimerId);
+        clearTimeout(this._channelTimerId);
+        clearTimeout(this._smileDefinitionUrlTimerId);
     }
     
     postMessage (message, to) {
@@ -82,78 +93,52 @@ export class peka2tv {
             this.onMessage(this, errorMessage);
         }
     }
-    
-    _stopChat () {
-        this._isStopped = true;
-        clearInterval(this._chatTimerId);
-        clearTimeout(this._channelTimerId);
-        clearTimeout(this._smileDefinitionUrlTimerId);
+        
+    async _login() {
+        const url = this._API_URL + "/api/user/login";
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({'name': this._username,
+                                  'password': this._password}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const json = await response.json();
+
+        return { "token": json.token, "userId": json.current.id }
     }
     
-    _login() {
-        return new Promise(function (fulfill, reject) {
-            this._request({
-                    method: "POST",
-                    url: this._API_URL + "/api/user/login",
-                    json: true,
-                    body: {
-                        "name": this._username,
-                        "password": this._password,
-                    }
-                },
-                function (err, response, body) {
-                    if (this._isStopped) {
-                        return;
-                    }
-                    if (err || response.statusCode !== 200) {
-                        return reject("Не удалось получить токен для бота.");
-                    }
-                    fulfill({ "token": body.token, "userId": body.current.id});
-                }.bind(this)
-            );
-        }.bind(this));
+    async _findChannelId () {
+        const url = this._API_URL + "/api/user";
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({'name': this.channel}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const json = await response.json();
+
+        return json.id;
     }
     
-    _findChannelId () {
-        return new Promise(function (fulfill, reject) {
-            this._request({
-                    method: "POST",
-                    url: this._API_URL + "/api/user",
-                    json: true,
-                    body: {"name": this.channel}
-                },
-                function (err, response, body) {
-                    if (this._isStopped) {
-                        return;
-                    }
-                    if (err || response.statusCode !== 200) {
-                        return reject("Не удалось получить идентификатор канала.");
-                    }
-                    fulfill(body.id);
-                }.bind(this)
-            );
-        }.bind(this));
-    }
-    
-    _getSmiles () {
-        return new Promise(function (fulfill, reject) {
-            this._request({
-                    method: "POST",
-                    url: this._API_URL + "/api/smile",
-                    json: true,
-                    body: {"channel": this.channel}
-                },
-                function (err, response, body) {
-                    if (this._isStopped) {
-                        return;
-                    }
-                    if (err || response.statusCode !== 200) {
-                        return reject("Не удалось получить список смайлов.");
-                    }
-                    fulfill(body);
-                }.bind(this)
-            );
-        }.bind(this));
+    async _getSmiles () {
+        const url = this._API_URL + '/api/smile';
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({'channel': this.channel}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return await response.json();
     }
     
     _flattenSmiles (smiles) {
@@ -164,7 +149,7 @@ export class peka2tv {
         return flattenedSmiles;
     }
     
-    _connect () {
+    _connectToChat () {
         var io = require('socket.io-client');
         this._socket = io('wss://chat.peka2.tv', {
             transports: ['websocket'],

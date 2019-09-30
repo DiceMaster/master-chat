@@ -33,44 +33,10 @@ export class gg {
         this.onMessage = null;
         this.onStatusChanged = null;
 
-        var resourcesPromise = this._findChannelId(this._CHANNEL_STATUS_URL.replace("%channel%", channel))
-            .then(function(channelId){
-                this._channelId = channelId;
-                return Promise.all([
-                    this._getSmileDefinition(this._SMILES_DEFINITION_URL),
-                    this._getCss(this._SMILES_COMMON_CSS_URL),
-                    this._getCss(this._SMILES_CHANNELS_CSS_URL)
-                ]);
-            }.bind(this));
-
-        var credentialsProvided = typeof this._username == "string";
-        var finalPromise =  credentialsProvided ?
-            Promise.all([
-                resourcesPromise,
-                this._login()
-            ]) :
-            resourcesPromise;
-
-        finalPromise.then(function (results) {
-                var resourceValues;
-                if (credentialsProvided) {
-                    resourceValues = results[0];
-                    this._userId = results[1].userId;
-                    this._token = results[1].token;
-                } else {
-                    resourceValues = results;
-                }
-                this._allSmiles = this._buildAllSmiles(resourceValues[0]);
-                this._applyStyle(resourceValues[1] + "\n" + resourceValues[2]);
-
-                this._connect();
-
-                this._fetchStatus();
-            }.bind(this)
-        ).catch(function (err) {
-                console.log(err);
-                this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame. " + err);
-            }.bind(this));
+        this._connectToChannel().catch(function(err) {
+            console.log(err);
+            this._fireErrorMessage("Ошибка подключения к каналу " + channel + " на GoodGame.");
+        }.bind(this));
     }
 
     stopChat () {
@@ -100,62 +66,82 @@ export class gg {
         this._socket.send(JSON.stringify(chatMessage));
     }
 
-    _fetchStatus () {
-        fetch(this._STREAM_STATS_URL + this.channel, {
-                headers: { "Accept": "application/json" }
-            })
-            .then(function(response) {
-                    return response.json();
-                }.bind(this)
-            ).then(function(json) {
-                    const status = json.status === "Live"
-                                 ? ChannelStatus.Status.Live
-                                 : ChannelStatus.Status.Offline;
-                    
-                    const viewers = json.player_viewers || 0;
+    async _connectToChannel() {
+        const url = this._CHANNEL_STATUS_URL.replace("%channel%", this.channel);
+        this._channelId = await this._findChannelId(url);
 
-                    if (typeof this.onStatusChanged === "function") {
-                        this.onStatusChanged(status, viewers);
-                    }
+        var actions =[
+            this._getSmileDefinition(this._SMILES_DEFINITION_URL),
+            this._getCss(this._SMILES_COMMON_CSS_URL),
+            this._getCss(this._SMILES_CHANNELS_CSS_URL)
+        ];
 
-                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
-                }.bind(this)
-            ).catch(function(error) {
-                    console.log(error);
+        const credentialsProvided = typeof this._username == "string";
+        if (credentialsProvided) {
+            actions.push(this._login());
+        }
 
-                    if (typeof this.onStatusChanged === "function") {
-                        this.onStatusChanged(ChannelStatus.Status.Unknown, 0);
-                    }
+        const results = await Promise.all(actions);
 
-                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
-                }.bind(this)
-            );
+        if (credentialsProvided) {
+            this._userId = results[3].userId;
+            this._token = results[3].token;
+        }
+        
+        this._allSmiles = this._buildAllSmiles(results[0]);
+        this._applyStyle(results[1] + "\n" + results[2]);
+
+        this._connectToChat();
+
+        this._fetchStatus();
     }
 
-    _login () {
-        return new Promise(function(fulfill, reject) {
-            this._request.post({
-                    url: this._LOGIN_URL,
-                    form: {login: this._username, password: this._password}
-                },
-                function (err, response, body) {
-                    if (this._isStopped) {
-                        return;
-                    }
-                    if (err || response.statusCode !== 200) {
-                        return reject("Не удалось получить токен авторизации.");
-                    }
-                    var jsonData = JSON.parse(body);
-                    if (!jsonData) {
-                        return reject("Не удалось обработать ответ на запрос токена автоизации (" + body + ").");
-                    }
-                    if (!jsonData.result) {
-                        return reject("Ошиба получения токена авторизации. " + jsonData.response);
-                    }
-                    fulfill({"userId": jsonData.user_id, "token": jsonData.token });
-                }.bind(this)
-            );
-        }.bind(this));
+    async _fetchStatus () {
+        try {
+            const response = await fetch(this._STREAM_STATS_URL + this.channel, {
+                headers: { "Accept": "application/json" }
+            });
+            const json = await response.json();
+
+            const status = json.status === "Live"
+                         ? ChannelStatus.Status.Live
+                         : ChannelStatus.Status.Offline;
+
+            const viewers = json.player_viewers || 0;
+
+            if (typeof this.onStatusChanged === "function") {
+                this.onStatusChanged(status, viewers);
+            }
+
+            setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+        } catch (err) {
+            console.log(err);
+
+            if (typeof this.onStatusChanged === "function") {
+                this.onStatusChanged(ChannelStatus.Status.Unknown, 0);
+            }
+
+            setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+        }
+    }
+
+    async _login () {
+        const formData = new FormData();
+        formData.append('login', this._username);
+        formData.append('password', this._password);
+
+        const response = await fetch(this._LOGIN_URL, {
+            method: 'POST',
+            body: formData
+        });
+
+        const json = await response.json();
+
+        if (!json.result) {
+            throw ("Failed to get auth token from " + json);
+        }
+        
+        return {"userId": json.user_id, "token": json.token };
     }
     
     _fireErrorMessage (messageText) {
@@ -189,62 +175,34 @@ export class gg {
         gg._styleElement.innerHTML = style;
     }
     
-    _findChannelId (url) {
-        return new Promise(function(fulfill, reject) {
-            this._request(url, function (error, response, body) {
-                if (this._isStopped) {
-                    return;
-                }
-                if (error || response.statusCode !== 200) {
-                    return reject("Не удалось получить идентификатор чата");
-                }
-                var jsonData = JSON.parse(body);
-                var id;
-                for (var prop in jsonData) {
-                    if (jsonData.hasOwnProperty(prop)) {
-                        id = prop;
-                        break;
-                    }
-                }
-                fulfill(id);
-            }.bind(this));
-        }.bind(this));
+    async _findChannelId (url) {
+        const response = await fetch(url);
+        const json = await response.json();
+
+        for (var prop in json) {
+            if (json.hasOwnProperty(prop)) {
+                return prop;
+            }
+        }
+        throw "Failed to get channel ID from response " + json;
     }
     
-    _getSmileDefinition (url) {
-        return new Promise(function(fulfill, reject) {
-            this._request(url, function (error, response, body) {
-                if (this._isStopped) {
-                    return;
-                }
-                if (error || response.statusCode !== 200) {
-                    return reject ("Не удалось получить список смайлов.");
-                }
-                var smileDefinitionMatch = body.match(/var\s+Global\s*=\s*(\{[\s\S]+});/);
-                if (smileDefinitionMatch === null) {
-                    return reject("Не удалось получить список смайлов.");
-                }
-                var ggSmiles = eval("(" + smileDefinitionMatch[1] + ")");
-                fulfill(ggSmiles);
-            }.bind(this));
-        }.bind(this));
+    async _getSmileDefinition (url) {
+        const response = await fetch(url);
+        const body = await response.text();
+        const smileDefinitionMatch = body.match(/var\s+Global\s*=\s*(\{[\s\S]+});/);
+        if (!smileDefinitionMatch) {
+            throw "Failed to parse smiles definition.";
+        }
+        return eval("(" + smileDefinitionMatch[1] + ")");
     }
     
-    _getCss (url) {
-        return new Promise(function(fulfill, reject) {
-            this._request(url, function (error, response, body) {
-                if (this._isStopped) {
-                    return;
-                }
-                if (error || response.statusCode !== 200) {
-                    return reject("Не удалось получить стили смайлов.");
-                }
-                fulfill(body);
-            }.bind(this));
-        }.bind(this));
+    async _getCss (url) {
+        const response = await fetch(url);
+        return await response.text();
     }
     
-    _connect () {
+    _connectToChat () {
         this._socket = new WebSocket(this._CHAT_URL);
 
         this._socket.addEventListener('open', function (event) {
@@ -259,7 +217,7 @@ export class gg {
         this._socket.addEventListener('close', function () {
             console.log("GG chat closed. Reconnecting.");
             this._socket = null;
-            setTimeout(this._connect.bind(this), this._RETRY_INTERVAL);
+            setTimeout(this._connectToChat.bind(this), this._RETRY_INTERVAL);
         }.bind(this));
     }
     
