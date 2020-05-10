@@ -15,7 +15,7 @@ export class gg {
 
         this._CHAT_URL = "wss://chat-2.goodgame.ru/chat2/";
         this._STREAM_STATS_URL = "https://api2.goodgame.ru/v2/streams/";
-        this._LOGIN_URL = " https://goodgame.ru/ajax/chatlogin/";
+        this._LOGIN_URL = "https://goodgame.ru/ajax/chatlogin/";
         this._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
         this._SMILES_DEFINITION_URL = "http://goodgame.ru/js/minified/global.js";
         this._SMILES_COMMON_CSS_URL = "http://goodgame.ru/css/compiled/common_smiles.css";
