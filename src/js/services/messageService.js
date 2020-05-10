@@ -122,7 +122,7 @@ export class MessageService {
         }
 
         var lastMessageTime = this._configService.getChannelLastMessageTime(message.chat, message.channel);
-        message.isFresh = !message.time || message.time > lastMessageTime;
+        message.isFresh = !message.time || !lastMessageTime || message.time > lastMessageTime;
         
         if (message.isFresh) {
             if (message.time) {
