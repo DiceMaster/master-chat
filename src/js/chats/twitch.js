@@ -16,17 +16,21 @@ export class twitch {
         this.chatLogoClass = "chat_twitch_logo";
 
         this._CLIENT_ID = "pzwxcc3xqzrlkbmz0nzxn7pt4xit46";
+        this._CLIENT_SECRET = "s29iipgvdex81x9jtzymrww52cp94k";
         this._STREAM_STATS_URL = "https://api.twitch.tv/helix/streams?user_login=";
+        this._CLIENT_CREDENTIALS_AUTH_URL = "https://id.twitch.tv/oauth2/token?client_id={ClientID}&client_secret={ClientSecret}&grant_type=client_credentials";
         this._STATUS_UPDATE_INTERVAL = 60000;
 
         this._client = null;
+
+        this._token = null;
 
         this.onMessage = null;
         this.onStatusChanged = null;
 
         this._connect();
 
-        this._fetchStatus();
+        this._authorizeAndFetchStatus();
     }
 
     postMessage (message, to) {
@@ -36,9 +40,44 @@ export class twitch {
         this._client.say(this.channel, (to ? "@"+to+", " : "") + message);
     }
 
+    _authorizeAndFetchStatus() {
+        if (this._token && this._token.expiration > Date.now()) {
+            this._fetchStatus();
+            return;
+        }
+        const url = this._CLIENT_CREDENTIALS_AUTH_URL
+            .replace("{ClientID}", this._CLIENT_ID)
+            .replace("{ClientSecret}", this._CLIENT_SECRET)
+
+        fetch(url, { method: 'POST' })
+        .then(function(response) {
+                return response.json();
+            }.bind(this)
+        ).then(function(json) {
+                let expiration = new Date();
+                expiration.setSeconds(expiration.getSeconds() + json.expires_in - 10);
+                this._token = {
+                    access_token: json.access_token,
+                    expiration: expiration
+                };
+
+                this._fetchStatus();
+            }.bind(this)
+        ).catch(function(error) {
+                console.log(error);
+
+                if (typeof this.onStatusChanged === "function") {
+                    this.onStatusChanged(ChannelStatus.Status.Unknown, 0);
+                }
+
+                setTimeout(this._authorizeAndFetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+            }.bind(this)
+        );
+    }
+
     _fetchStatus () {
         fetch(this._STREAM_STATS_URL + this.channel, {
-                headers: { "Accept": "application/vnd.twitchtv.v5+json",
+                headers: { "Authorization": "Bearer " + this._token.access_token,
                            "Client-ID": this._CLIENT_ID }
             })
             .then(function(response) {
@@ -63,7 +102,7 @@ export class twitch {
                         this.onStatusChanged(status, viewers);
                     }
 
-                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+                    setTimeout(this._authorizeAndFetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
                 }.bind(this)
             ).catch(function(error) {
                     console.log(error);
@@ -72,7 +111,7 @@ export class twitch {
                         this.onStatusChanged(ChannelStatus.Status.Unknown, 0);
                     }
 
-                    setTimeout(this._fetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
+                    setTimeout(this._authorizeAndFetchStatus.bind(this), this._STATUS_UPDATE_INTERVAL);
                 }.bind(this)
             );
     }
