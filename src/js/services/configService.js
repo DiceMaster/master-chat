@@ -7,13 +7,10 @@ export class ConfigService {
 
         this._DEFAULT_THEME = "default";
 
-        this._CONFIG_SAVE_INTERVAL = 30000;
-
         this._config = this._loadConfig(filename);
         this._ranks = this._loadRanks("templates/" + this._config.theme + "/ranks.json");
         this._appLifeCycleService = appLifeCycleService;
         this._appLifeCycleService.onClose(this._saveConfig.bind(this));
-        setInterval(this._saveConfig.bind(this), this._CONFIG_SAVE_INTERVAL);
     }
 
     getChannels () {
