@@ -17,7 +17,12 @@ export class MessageListViewController {
 
         this._parser = new DOMParser();
 
-        this._autoScrollThreshold  = 50;
+        this._autoScrollThreshold  = 1;
+        this._autoScroll = true;
+
+        this._view.onscroll = (e => {
+            this._autoScroll = this._scrollPositionIsAtBottom();
+        }).bind(this);
 
         this._registerHotkeys();
     }
@@ -58,8 +63,6 @@ export class MessageListViewController {
     }
     
     _onmessage (message) {
-        const isScrollAtBottom = this._view.scrollTop + this._view.clientHeight >= this._view.scrollHeight - this._autoScrollThreshold;
-
         const messageCopy = Object.assign({}, message);
         messageCopy.rankIcon = this._theme.getRankIconPath(message.rankIcon);
     
@@ -68,10 +71,39 @@ export class MessageListViewController {
 
         for (let node of nodes) {
             this._view.appendChild(node);
+
+            this._forEachImage(node, img => {
+                img.onload = (function () {
+                    this._scrollIfNeeded();
+                }).bind(this);
+            });
         }
-    
-        if (isScrollAtBottom) {
+
+        this._scrollIfNeeded();
+    }
+
+    _scrollPositionIsAtBottom() {
+        return this._view.scrollTop + this._view.clientHeight >= this._view.scrollHeight - this._autoScrollThreshold;
+    }
+
+    _scrollIfNeeded() {
+        if (this._scrollPositionIsAtBottom()) {
+            return;
+        }
+
+        if (this._autoScroll) {
             this._view.scrollTop = this._view.scrollHeight;
+        }
+    }
+
+    _forEachImage(node, func) {
+        if (node instanceof HTMLImageElement) {
+            func(node);
+        }
+        node = node.firstChild;
+        while (node) {
+            this._forEachImage(node, func);
+            node = node.nextSibling;
         }
     }
 }
