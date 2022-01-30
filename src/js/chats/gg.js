@@ -236,14 +236,10 @@ export class gg {
                 };
                 this._socket.send(JSON.stringify(authMessage));
                 break;
+            case "unjoin":
+                console.log("Will rejoin to GG chat.");
+                // fallthrough
             case "success_auth":
-                var unjoinMessage = {
-                    "type": "unjoin",
-                    "data": {
-                        "channel_id": this._channelId
-                    }
-                };
-                this._socket.send(JSON.stringify(unjoinMessage));
                 var joinMessage = {
                     "type": "join",
                     "data": {
