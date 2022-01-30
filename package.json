@@ -16,9 +16,9 @@
   },
   "dependencies": {
     "nedb": "1.8.0",
-    "tmi.js": "1.5.0",
-    "socket.io-client": "2.3.0",
-    "handlebars": "4.7.6",
-    "onsenui": "2.10.10"
+    "tmi.js": "1.8.5",
+    "socket.io-client": "4.4.1",
+    "handlebars": "4.7.7",
+    "onsenui": "2.11.2"
   }
 }

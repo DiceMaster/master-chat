@@ -8,7 +8,6 @@ export class twitch {
         this._username = username;
         this._password = password;
 
-        this._request = require("request");
         this._fs = require("fs");
 
         this.name = "twitch";

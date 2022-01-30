@@ -5,7 +5,6 @@ export class youtube {
         this.channel = channel;
         this._username = username;
         this._password = password;
-        this._request = require("request");
 
         this.name = "youtube";
         this.displayName = "YouTube.com";

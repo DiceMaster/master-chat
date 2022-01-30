@@ -28,7 +28,6 @@ export class peka2tv {
         
         this._isStopped = false;
         
-        this._request = require("request");
         this._smiles = [];
         this._usersIdentifiers = {};
         this._receivedMessageIds = new Set();

@@ -7,7 +7,6 @@ export class gg {
         this.channel = channel;
         this._username = username;
         this._password = password;
-        this._request = require("request");
 
         this.name = "gg";
         this.displayName = "GoodGame.ru";
