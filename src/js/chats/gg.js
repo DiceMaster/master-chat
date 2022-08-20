@@ -13,7 +13,7 @@ export class gg {
         this.chatLogoClass = "chat_goodgame_logo";
 
         this._CHAT_URL = "wss://chat-2.goodgame.ru/chat2/";
-        this._STREAM_STATS_URL = "https://api2.goodgame.ru/v2/streams/";
+        this._STREAM_STATS_URL = "https://goodgame.ru/api/4/streams/";
         this._LOGIN_URL = "https://goodgame.ru/ajax/chatlogin/";
         this._CHANNEL_STATUS_URL = "http://goodgame.ru/api/getchannelstatus?id=%channel%&fmt=json";
         this._SMILES_DEFINITION_URL = "http://goodgame.ru/js/minified/global.js";
@@ -102,11 +102,11 @@ export class gg {
             });
             const json = await response.json();
 
-            const status = json.status === "Live"
+            const status = json.status === 1
                          ? ChannelStatus.Status.Live
                          : ChannelStatus.Status.Offline;
 
-            const viewers = json.player_viewers || 0;
+            const viewers = json.viewers || 0;
 
             if (typeof this.onStatusChanged === "function") {
                 this.onStatusChanged(status, viewers);
