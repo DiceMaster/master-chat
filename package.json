@@ -17,7 +17,7 @@
   "dependencies": {
     "nedb": "1.8.0",
     "tmi.js": "1.8.5",
-    "socket.io-client": "4.4.1",
+    "socket.io-client": "4.6.1",
     "handlebars": "4.7.7",
     "onsenui": "2.11.2"
   }
